@@ -4,6 +4,11 @@ BlitzMax JSON by Scaremonger.
 
 **VERSION:** 2.0
 
+# DEPENDENCIES
+* [BlitzMax-NG](https://blitzmax.org/downloads/)
+* [bmx.lexer](https://github.com/blitzmax-itspeedway-net/lexer.mod)
+* [bmx.parser](https://github.com/blitzmax-itspeedway-net/parser.mod)
+
 # MANUAL INSTALL USING GIT
 **LINUX:**
 ```
