@@ -2,7 +2,7 @@ SuperStrict
 
 '	JSON MODULE FOR BLITZMAX
 '	(c) Copyright Si Dunford, July 2021, All Rights Reserved
-'	V2.0
+'	V2.1
 
 Rem
 bbdoc: bmx.json
@@ -61,13 +61,22 @@ ModuleInfo "History: Fixed issue parsing whitespace strings"
 ModuleInfo "History: Fixed line numbers in errors"
 ModuleInfo "History: Fixed bug where EOL was reported as unexpected before a comma"
 
+ModuleInfo "History: V2.1, 09 NOV 21"
+ModuleInfo "History: Fixed Escaping issue with strings containing quotes"
+
 Import brl.objectlist
 
 Import bmx.lexer
 Import bmx.parser
 
+'   INCREMENT JSON_VERSION
+?Debug
+' @bmk include src/version.bmk
+' @bmk incrementVersion src/version.bmx
+?
+Include "src/version.bmx"
+
 Include "src/JSON.bmx"
 Include "src/TJSONLexer.bmx"
 Include "src/TJSONParser.bmx"
-
 

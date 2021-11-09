@@ -11,7 +11,7 @@ Const JSON_NUMBER:Int 	= 4
 Const JSON_NULL:Int 	= 5
 Const JSON_OBJECT:Int 	= 6
 Const JSON_STRING:Int 	= 7
-	
+
 Type JSON
 	Private
 
@@ -146,6 +146,8 @@ Type JSON
         If class = "object"
 			Local map:TMap = TMap( value )
 			If map
+				'DebugStop
+				'key = unescape(key)
 				Local J:JSON = JSON( map.valueforkey(key) )
 				If J Return String( J.value )
 			End If
@@ -186,6 +188,7 @@ Type JSON
 			If map
 				For Local key:String = EachIn map.keys()
                     Local j:JSON = JSON( map[key] )
+					'Local K:String = key
 					Text :+ "~q"+key+"~q:"+j.stringify()+","
 				Next
 				' Strip trailing comma
@@ -207,9 +210,9 @@ Type JSON
 		Case "number"
 			Text :+ String(value)
 		Case "string"
-			Text :+ "~q"+String(value)+"~q"
+			Text :+ "~q"+escape(String(value))+"~q"
 		Case "keyword"
-			Text :+ String(value)
+			Text :+ escape(String(value))
 		Case "invalid"
 			Text :+ "#ERR#"
 		Default
@@ -492,6 +495,34 @@ Type JSON
 		DebugLog( message + ", " + state + ", "+ alt )
 	End Method
 
+	' Escape a string
+	Method escape:String( Text:String )
+		Local escaped:String = Text
+		escaped = escaped.Replace( "\", "\\" )			' Reverse Solidus
+		escaped = escaped.Replace( "~q", "\~q" )		' Quotation mark
+		escaped = escaped.Replace( "/", "\/" )			' Solidus
+		escaped = escaped.Replace( Chr(8), "\b" )		' Backspace			ASC(08)
+		escaped = escaped.Replace( Chr(12), "\f" )		' Form Feed			ASC(12)
+		escaped = escaped.Replace( "~n", "\n" )			' Line Feed			ASC(10)
+		escaped = escaped.Replace( "~r", "\r" )			' Carriage Return	ASC(13)
+		escaped = escaped.Replace( "~t", "\t" )			' Horizontal Tab	ASC(09)
+		Return escaped
+	End Method
+	
+	' De-Escape a string
+	Method unescape:String( escaped:String )
+		Local Text:String = escaped
+		Text = Text.Replace( "\\", "\" )			' Reverse Solidus
+		Text = Text.Replace( "\~q", "~q" )			' Quotation mark
+		Text = Text.Replace( "\/", "/" )			' Solidus
+		Text = Text.Replace( "\b", Chr(8) )			' Backspace			ASC(08)
+		Text = Text.Replace( "\f", Chr(12) )		' Form Feed			ASC(12)
+		Text = Text.Replace( "\n", "~n" )			' Line Feed			ASC(10)
+		Text = Text.Replace( "\r", "~r" )			' Carriage Return	ASC(13)
+		Text = Text.Replace( "\t", "~t" )			' Horizontal Tab	ASC(09)
+		Return Text
+	End Method
+
     ' Convert text into a JSON object
     Function Parse:JSON( Text:String )
         ' For convenience, and empty string is the same as {}
@@ -507,6 +538,17 @@ Type JSON
         Return parser.parse_json()
     End Function
 
+	Function version:String()
+		Return JSON_VERSION+"."+JSON_BUILD
+	End Function
+	
+	Function versioncheck:Int( minver:Float, minbuild:Int )
+		If Float( JSON_VERSION ) < minver Return False
+		If Float( JSON_VERSION ) > minver Return True
+		If Int( JSON_BUILD ) >= minbuild Return True
+		Return False
+	End Function
+	
 End Type
 
 ' De-Quote a string
