@@ -32,7 +32,7 @@ Type TJSONParser Extends TParser
 		'Print( "LEXER.TIME: "+(finish-start)+"ms" )
 	
 		'Print( "STARTING LEXER DEBUG:")
-		Print( lexer.reveal() )
+		'Print( lexer.reveal() )
 'DebugStop
 		'	RUN THE PARSER
 		

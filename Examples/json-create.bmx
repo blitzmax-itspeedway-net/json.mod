@@ -13,7 +13,7 @@ response.set( "id", 99 )
 
 response.set( "test", "testing" )
 response.set( "error|code", 42 )
-
+Print response.stringify()
 
 Local J:JSON 
 J = response.find( "id" )
