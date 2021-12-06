@@ -2,7 +2,7 @@
 
 BlitzMax JSON by Scaremonger.
 
-**VERSION:** 2.1
+**VERSION:** 2.2
 
 # DEPENDENCIES
 * [BlitzMax-NG](https://blitzmax.org/downloads/)
@@ -68,6 +68,7 @@ V1.10 | 22 OCT 21 | Find returns empty JSON instead of NULL when not found.
 V1.11 | 24 OCT 21 | Fixed bug in .toArray()
 V2.0 | 29 OCT 21 | Major refactoring to support TLexer V2.0<br>Fixed issue parsing whitespace strings<br>Fixed line numbers in errors<br>Fixed bug where EOL was reported as unexpected before a comma
 V2.1 | 09 NOV 21 | Fixed Escaping issue with strings containing quotes
+V2.2 | 06 DEC 21 | Updated size() to support objects<br> Added search() and is()
 
 # HOW TO USE
 

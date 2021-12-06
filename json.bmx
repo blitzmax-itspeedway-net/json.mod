@@ -60,9 +60,13 @@ ModuleInfo "History: Major refactoring to support TLexer V2.0"
 ModuleInfo "History: Fixed issue parsing whitespace strings"
 ModuleInfo "History: Fixed line numbers in errors"
 ModuleInfo "History: Fixed bug where EOL was reported as unexpected before a comma"
-
 ModuleInfo "History: V2.1, 09 NOV 21"
 ModuleInfo "History: Fixed Escaping issue with strings containing quotes"
+
+ModuleInfo "History: V2.2, 06 DEC 21"
+ModuleInfo "History: Updated size() to support objects"
+ModuleInfo "History: Added search()"
+ModuleInfo "History: Added is()"
 
 Import brl.objectlist
 

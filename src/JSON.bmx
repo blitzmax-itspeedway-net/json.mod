@@ -141,6 +141,10 @@ Type JSON
 		Return (class = "keyword" And String(value) = "null")
 	End Method
 
+	Method is:Int( criteria:String )
+		Return ( class = Lower(criteria) )
+	End Method	
+
 	' Get value of a JSON object's child using string index
 	Method operator []:String( key:String )
         If class = "object"
@@ -370,7 +374,7 @@ Type JSON
 		J.class = node.class
 		J.value = node.value
     End Method
-
+	
 	' V0.1
 	Method find:JSON( route:String, createme:Int = False )
         ' Ignore empty route
@@ -411,6 +415,46 @@ Type JSON
 		End If
 	End Method
 
+	' V0.2
+	Method exists:Int( route:String )
+        ' Ignore empty route
+        route = Trim(route)
+        If route="" Return False
+		' Split up the path
+        Return Not( search( route.split("|") ) = Null )
+	End Method
+
+	Method search:JSON( route:String )
+        ' Ignore empty route
+        route = Trim(route)
+        If route="" Return Null
+		' Split up the path
+        Return search( route.split("|") )
+	End Method
+	
+	' Search is like FIND but returns NUL if not found
+	Method search:JSON( path:String[] )
+	'DebugStop
+		If path.length=0		' Found!
+			Return Self
+		Else
+			' If child is specified then I MUST be an object right?
+			Local child:JSON, map:TMap
+			If class="object" ' Yay, I am an object.
+				If value=Null
+					value = New TMap()
+				End If
+				map = TMap( value )
+			Else 
+				Return Null ' Not found
+			End If
+			' Does child exist?
+			child = JSON( map.valueforkey( path[0] ) )
+			If Not child Return Null ' Not found
+			Return child.find( path[1..] )
+		End If
+	End Method
+
     Method contains:Int( name:String )		
 		' Only an Object contains named children
 		If class<>"object" ; Return False
@@ -425,7 +469,18 @@ Type JSON
 
 	' Get SIZE of an ARRAY
 	Method size:Int()
-		If class = "array" Return TObjectList(value).count()
+		Select class
+		Case "array"
+			Return TObjectList(value).count()
+		Case "class"
+			Local map:TMap = TMap( value )
+			If Not map Return 0
+			Local count:Int = 0
+			For Local key:String = EachIn map.keys()
+				count :+1
+			Next
+			Return count
+		End Select 
 		Return 0
 	End Method
 	
