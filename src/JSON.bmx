@@ -232,7 +232,7 @@ Type JSON
 	Method Prettify:String( tab:String="  " )
 		Local Text:String = Stringify()
 		Try
-			For Local set:String[] = EachIn [["{","{~n"],["[","[~n"],["}","~n}"],["]","~n]"],[":",": "],[",",",~n"]]
+			For Local set:String[] = EachIn [["{","{~n"],["[","[~n"],["}","~n}"],["]","~n]"],["~q:","~q: "],[",",",~n"]]
 				Text = Text.Replace( set[0], set[1] )		
 			Next		
 			Local tokens:String[] = Text.split( "~n" )
@@ -555,7 +555,7 @@ Type JSON
 		Local escaped:String = Text
 		escaped = escaped.Replace( "\", "\\" )			' Reverse Solidus
 		escaped = escaped.Replace( "~q", "\~q" )		' Quotation mark
-		escaped = escaped.Replace( "/", "\/" )			' Solidus
+		'escaped = escaped.Replace( "/", "\/" )			' Solidus
 		escaped = escaped.Replace( Chr(8), "\b" )		' Backspace			ASC(08)
 		escaped = escaped.Replace( Chr(12), "\f" )		' Form Feed			ASC(12)
 		escaped = escaped.Replace( "~n", "\n" )			' Line Feed			ASC(10)
@@ -567,9 +567,9 @@ Type JSON
 	' De-Escape a string
 	Method unescape:String( escaped:String )
 		Local Text:String = escaped
+		'Text = Text.Replace( "\/", "/" )			' Solidus
 		Text = Text.Replace( "\\", "\" )			' Reverse Solidus
 		Text = Text.Replace( "\~q", "~q" )			' Quotation mark
-		Text = Text.Replace( "\/", "/" )			' Solidus
 		Text = Text.Replace( "\b", Chr(8) )			' Backspace			ASC(08)
 		Text = Text.Replace( "\f", Chr(12) )		' Form Feed			ASC(12)
 		Text = Text.Replace( "\n", "~n" )			' Line Feed			ASC(10)
