@@ -2,7 +2,7 @@ SuperStrict
 
 '	JSON MODULE FOR BLITZMAX
 '	(c) Copyright Si Dunford, July 2021, All Rights Reserved
-'	V2.1
+'	V2.3
 
 Rem
 bbdoc: bmx.json
@@ -12,7 +12,7 @@ Module bmx.json
 
 ModuleInfo "Copyright: Si Dunford, July 2021, All Rights Reserved"
 ModuleInfo "Author:    Si Dunford"
-ModuleInfo "Version:   2.0"
+ModuleInfo "Version:   2.3"
 ModuleInfo "License:   MIT"
 
 ModuleInfo "History: V1.0, 20 JUL 21"
@@ -68,10 +68,14 @@ ModuleInfo "History: Updated size() to support objects"
 ModuleInfo "History: Added search()"
 ModuleInfo "History: Added is()"
 
+ModuleInfo "History: V2.3, 12 DEC 22"
+ModuleInfo "History: Moved bmx.lexer and bmx.parser internally as those are due to change"
+ModuleInfo "History: Added Function serialise()"
+
 Import brl.objectlist
 
-Import bmx.lexer
-Import bmx.parser
+Import "lexer/lexer.bmx"
+Import "parser/parser.bmx"
 
 '   INCREMENT JSON_VERSION
 ?Debug

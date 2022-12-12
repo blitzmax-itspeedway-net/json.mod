@@ -2,7 +2,7 @@
 
 BlitzMax JSON by Scaremonger.
 
-**VERSION:** 2.2
+**VERSION:** 2.3
 
 # DEPENDENCIES
 * [BlitzMax-NG](https://blitzmax.org/downloads/)
@@ -56,7 +56,7 @@ VERSION | DATE | DETAIL
 V1.0 | 20 JUL 21 | Basic JSON Parser 
 V1.1 | 20 JUL 21 | Added Transpose into TypeStr using reflection, added find() and set()
 V1.2 | 20 JUL 21 | Moved parser into JSON_Parser. Merged JSON and JNode
-V1.3 | 20 JUL 21 | dded error()
+V1.3 | 20 JUL 21 | Added error()
 V1.4 | 24 AUG 21 | Re-Written to use bmx.lexer and converted to a Module
 V1.5 | 26 AUG 21 | Fixed issue with escaped characters including Hexcodes.
 V1.6 | 31 AUG 21 | Added contains() method plus example
@@ -69,6 +69,7 @@ V1.11 | 24 OCT 21 | Fixed bug in .toArray()
 V2.0 | 29 OCT 21 | Major refactoring to support TLexer V2.0<br>Fixed issue parsing whitespace strings<br>Fixed line numbers in errors<br>Fixed bug where EOL was reported as unexpected before a comma
 V2.1 | 09 NOV 21 | Fixed Escaping issue with strings containing quotes
 V2.2 | 06 DEC 21 | Updated size() to support objects<br> Added search() and is()
+V2.3 | 12 DEC 22 | Added Function serialize()<br>Fixed 'Floating point number as string' issue
 
 # HOW TO USE
 
@@ -110,6 +111,54 @@ Local J:JSON = JSON.Parse( JText )
 Local characters:JSON = J.find("story|Jack and Jill|characters")
 Print( characters.Prettify() )
 ```
+**BMX Type Serialisation**
+```
+Import bmx.json
+
+Type TPerson
+    Field name: String
+    Field age: Int 
+
+    Method New( name:string, age:int )
+        self.name = name
+        self.age = age
+    End Method
+
+End Type
+
+Local person:TPerson = new TPerson( "Scaremonger", 99 )
+Local J:JSON = JSON.serialize( person )
+Print( J.Prettify() )
+```
+
+Type fields can have the following metadata attached to direct the serialisation process:
+    {serializedname="NAME"}
+    Uses the given NAME field instead of the actula filed. This is useful if your JSON data contains keywords like "field" or "method".
+
+    {noserialize}
+    This prevents the fields from being serialised, effectivly ignoring it.
+
+
+**BMX Type De-Serialisation**
+```
+Import bmx.json
+
+Type TPerson
+    Field name: String
+    Field age: Int 
+End Type
+
+Local JText:String = "{~qname~q:~qScaremonger~q,~qage~q:99}"
+Local J:JSON = JSON.Parse( JText )
+
+Local person:TPerson = TPerson( J.Transpose( "TPerson" ) )
+If Person
+    Print( "NAME: "+Person.name )
+    Print( "AGE:  "+Person.age )
+End If
+```
+
+
 # JSON Specification:
 https://www.json.org/json-en.html
 
