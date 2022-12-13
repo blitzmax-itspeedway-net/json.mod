@@ -653,6 +653,8 @@ End Rem
 	
 '		##### JSON HELPER
 
+	public
+
     ' Set the value of a JSON
     Method set( value:String )
 		If value.startswith("~q") And value.endswith("~q")
