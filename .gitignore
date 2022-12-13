@@ -7,6 +7,7 @@
 .bmx/
 .vscode/
 .bls-cache/
+testing/
 
 # Exclude files
 *.bak

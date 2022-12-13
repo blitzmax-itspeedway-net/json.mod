@@ -242,7 +242,7 @@ End Rem
 				If Not key Return InvalidNode( "Expected quoted String" )
 				If Not eat( TK_Colon, Null ) Return InvalidNode( "Expected ':'" )
 				
-				Local name:String = Dequote( key.value )
+				Local name:String = Lower( Dequote( key.value ))
 				
 				' NEXT COMES THE CONTENT
 				

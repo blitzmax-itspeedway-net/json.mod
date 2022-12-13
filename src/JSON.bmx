@@ -72,9 +72,12 @@ Type JSON
         Self.value = value
     End Method
 
+	' Request location of last error
 	Method error:String()
 		Return errtext+" ["+errnum+"] at "+errline+":"+errpos
 	End Method
+	
+	Private
 	
 	' Get integer representation of the class
 	' NOTE: Internally these are strings, but that may change at some point
@@ -100,8 +103,76 @@ Type JSON
 		Return class
 	End Method
 	
-    Method toString:String()
-		Return String(value)
+	Public
+	
+	' Copy / Duplicate a JSON type
+	Method copy:JSON()
+		'DebugStop
+		Select class
+		Case "array"
+			Local J:JSON = New JSON()
+			J.class = class
+			J.value = New TObjectList()
+			For Local item:JSON = EachIn TObjectList( value )
+                'addlast( J.value, item.copy() )
+				J.addlast( item.copy() )
+			Next
+			Return J
+		Case "keyword";		Return New JSON( JSON_KEYWORD, String( value ) )
+		Case "number";		Return New JSON( JSON_NUMBER, String( value ) )
+		Case "string";		Return New JSON( JSON_STRING, String( value ) )
+		Case "object"
+			Local J:JSON = New JSON()
+			J.class = class
+			'J.value = New TMap()
+			Local map:TMap = TMap( value )
+			For Local key:String = EachIn map.keys()
+				J.set( key, JSON(map[key]).copy() )
+			Next
+			Return J
+		End Select
+		Return New JSON( JSON_INVALID )
+	End Method
+
+    Method toArray:JSON[]()
+		If class<>"array" Return [New JSON( "invalid", "Node is not an array" )]
+		Return JSON[](TObjectList(value).toArray())
+	End Method
+	
+	Method toByte:Byte()
+		Select class
+		Case "number","string"	;	Return Long(String(value))
+		Case "keyword"
+			Select String(value)
+			Case "true"			;	Return True
+			Case "false","null"	;	Return False
+			End Select
+		End Select
+		Return 0
+	End Method
+	
+	Method toDouble:Double()
+		Select class
+		Case "number","string"	;	Return Double(String(value))
+		Case "keyword"
+			Select String(value)
+			Case "true"			;	Return True
+			Case "false","null"	;	Return False
+			End Select
+		End Select
+		Return 0
+	End Method
+	
+	Method toFloat:Float()
+		Select class
+		Case "number","string"	;	Return Float(String(value))
+		Case "keyword"
+			Select String(value)
+			Case "true"			;	Return True
+			Case "false","null"	;	Return False
+			End Select
+		End Select
+		Return 0
 	End Method
 
     Method toInt:Int()
@@ -115,10 +186,55 @@ Type JSON
 		End Select
 		Return 0
 	End Method
+	
+    Method toLong:Long()
+		Select class
+		Case "number","string"	;	Return Long(String(value))
+		Case "keyword"
+			Select String(value)
+			Case "true"			;	Return True
+			Case "false","null"	;	Return False
+			End Select
+		End Select
+		Return 0
+	End Method
+	
+	Method toShort:Short()
+		Select class
+		Case "number","string"	;	Return Short(String(value))
+		Case "keyword"
+			Select String(value)
+			Case "true"			;	Return True
+			Case "false","null"	;	Return False
+			End Select
+		End Select
+		Return 0
+	End Method
+	
+	Method toSizeT:Size_T()
+		Return toSize_T()
+	End Method
 
-    Method toArray:JSON[]()
-		If class<>"array" Return [New JSON( "invalid", "Node is not an array" )]
-		Return JSON[](TObjectList(value).toArray())
+	Method toSize_T:Size_T()
+		Select class
+		Case "number","string"	;	Return Size_T(String(value))
+		Case "keyword"
+			Select String(value)
+			Case "true"			;	Return True
+			Case "false","null"	;	Return False
+			End Select
+		End Select
+		Return 0
+	End Method
+		
+    Method toString:String()
+		Return String(value)
+	End Method
+
+	Method toUInt:UInt()
+	End Method
+	
+	Method toULong:ULong()
 	End Method
 	
     Method isValid:Int()
@@ -181,48 +297,49 @@ Type JSON
 '		item.set( newvalue )
 '	End Method
 
-	' Produce a string representation of a JSON datatype
+	' Produce a stFring representation of a JSON datatype
     Method Stringify:String()
-		Local Text:String
+		Local txt:String
+		'DebugStop
 		'If Not j Return "~q~q"
 		Select class    ' JSON NODE TYPES
 		Case "object"
 			Local map:TMap = TMap( value )
-			Text :+ "{"
+			txt :+ "{"
 			If map
 				For Local key:String = EachIn map.keys()
                     Local j:JSON = JSON( map[key] )
 					'Local K:String = key
-					Text :+ "~q"+key+"~q:"+j.stringify()+","
+					txt :+ "~q"+key+"~q:"+j.stringify()+","
 				Next
 				' Strip trailing comma
-				If Text.endswith(",") Text = Text[..(Len(Text)-1)]
+				If txt.endswith(",") txt = txt[..(Len(txt)-1)]
 
 			End If
-			Text :+ "}"
+			txt :+ "}"
         Case "array"
-			Text :+ "["
+			txt :+ "["
             'For Local J:JSON = EachIn JSON[](value)
-            '    text :+ J.stringify()+","
+            '    txt :+ J.stringify()+","
             'Next
             For Local J:JSON = EachIn TObjectList(value)
-                Text :+ J.stringify()+","
+                txt :+ J.stringify()+","
 			Next
 			' Strip trailing comma
-			If Text.endswith(",") Text = Text[..(Len(Text)-1)]
-			Text :+ "]"
+			If txt.endswith(",") txt = txt[..(Len(txt)-1)]
+			txt :+ "]"
 		Case "number"
-			Text :+ String(value)
+			txt :+ String(value)
 		Case "string"
-			Text :+ "~q"+escape(String(value))+"~q"
+			txt :+ "~q"+escape(String(value))+"~q"
 		Case "keyword"
-			Text :+ escape(String(value))
+			txt :+ escape(String(value))
 		Case "invalid"
-			Text :+ "#ERR#"
+			txt :+ "#ERR#"
 		Default
-			Publish( "log", "DEBG", "INVALID SYMBOL: '"+class+"', ''" )
+			SendUpdate( "log", "DEBG", "INVALID SYMBOL: '"+class+"', ''" )
 		End Select
-		Return Text
+		Return txt
 	End Method
 
 	Method Prettify:String( tabs:Int )
@@ -230,12 +347,12 @@ Type JSON
 	End Method
 
 	Method Prettify:String( tab:String="  " )
-		Local Text:String = Stringify()
+		Local txt:String = Stringify()
 		Try
 			For Local set:String[] = EachIn [["{","{~n"],["[","[~n"],["}","~n}"],["]","~n]"],["~q:","~q: "],[",",",~n"]]
-				Text = Text.Replace( set[0], set[1] )		
+				txt = txt.Replace( set[0], set[1] )		
 			Next		
-			Local tokens:String[] = Text.split( "~n" )
+			Local tokens:String[] = txt.split( "~n" )
 			Local indent:String
 			For Local i:Int = 0 Until tokens.length
 				Local token:String = tokens[i]
@@ -243,11 +360,11 @@ Type JSON
 				tokens[i] = indent+token
 				If token.endswith("{") Or token.endswith("[") ; indent :+ tab
 			Next
-			Text = "~n".join( tokens )
+			txt = "~n".join( tokens )
 		Catch e:TRegExException
 			DebugLog "Error : " + e.toString()
 		End Try
-		Return Text
+		Return txt
 	End Method
 
 	' Serialise a Blitzmax object into JSON
@@ -259,55 +376,6 @@ Type JSON
 	End Function
 		
 	Private
-	
-	Function _Object2JSON:JSON( obj:Object )
-		Local typeid:TTypeId = TTypeId.ForObject( obj )
-		Local J:JSON = New JSON()
-		For Local fld:TField = EachIn typeid.EnumFields()
-			
-			'DebugStop
-			If fld.metadata("noserialize") Or fld.metadata("noserialise"); Continue
-			
-			Local fieldType:TTypeId = fld.TypeID()
-			Local fieldName:String = fld.name()			
-			If fld.metadata("serializedname"); fieldname = fld.metadata("serializedname")
-			If fld.metadata("serialisedname"); fieldname = fld.metadata("serialisedname")
-
-			Select fieldType
-			Case ByteTypeId;	J.set( fieldName, fld.GetByte(obj) )
-			Case DoubleTypeId;	J.set( fieldName, fld.GetDouble(obj) )
-			Case FloatTypeId;	J.set( fieldName, fld.GetFloat(obj) )
-			Case IntTypeId;		J.set( fieldName, fld.GetInt(obj) )
-			Case LongTypeId;	J.set( fieldName, fld.GetLong(obj) )
-			Case ShortTypeId;	J.set( fieldName, fld.GetShort(obj) )
-			Case SizetTypeId;	J.set( fieldName, fld.GetSizeT(obj) )
-			Case StringTypeId
-				Local str:String = fld.GetString(obj)
-				If str; 		J.set( fieldName, str )
-			Case UIntTypeId;	J.set( fieldName, fld.GetUInt(obj) )
-			Case ULongTypeId;	J.set( fieldName, fld.GetULong(obj) )
-			Default
-				'DebugStop
-				Select True
-				Case fieldtype.extendsType( ArrayTypeID )
-					Local array:Object = fld.get( obj )
-					J.set( fieldname, _Array2JSON( array, fieldtype ) )
-				Case fieldtype.extendsType( ObjectTypeId )
-					Local o:Object = fld.get( obj )
-					If o
-						Local objectTypeId:TTypeId = TTypeId.ForObject(o)
-						J.set( fieldname, _Object2JSON( o ) )
-					End If
-				Default
-					DebugLog( "Unable to serialize "+fieldName+":"+fieldType.name() )
-				End Select
-			End Select
-			
-			'DebugLog( fieldName )
-			'fields.insert( fld.name(), fld.typeid.name() )
-		Next
-		Return J
-	End Function
 
 	Function _Array2JSON:JSON( array:Object, fieldtype:TTypeId )
 		Local J:JSON = New JSON( JSON_ARRAY )
@@ -337,7 +405,7 @@ Type JSON
 			Case IntTypeId;		J.addlast( New JSON( JSON_NUMBER, fieldtype.GetIntArrayElement( array,e ) ))
 			Case LongTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetLongArrayElement( array,e ) ))
 			Case ShortTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetShortArrayElement( array,e ) ))
-			Case SizetTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetSizeTArrayElement( array,e ) ))
+			Case SizeTTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetSizeTArrayElement( array,e ) ))
 			Case StringTypeId
 				Local str:String = fieldtype.GetStringArrayElement( array,e )
 				If str; 		J.addlast( New JSON( JSON_STRING, str ) )
@@ -363,35 +431,183 @@ Type JSON
 		Next
 		Return J
 	End Function
-	
+
+	Function _Object2JSON:JSON( obj:Object )
+		Local typeid:TTypeId = TTypeId.ForObject( obj )
+		Local J:JSON = New JSON()
+		For Local fld:TField = EachIn typeid.EnumFields()
+			
+			'DebugStop
+			If fld.metadata("noserialize") Or fld.metadata("noserialise"); Continue
+			
+			Local fieldType:TTypeId = fld.TypeID()
+			Local fieldName:String = fld.name()			
+			If fld.metadata("serializedname"); fieldname = fld.metadata("serializedname")
+			If fld.metadata("serialisedname"); fieldname = fld.metadata("serialisedname")
+
+'If fieldname.startswith("initialization"); DebugStop
+
+			Select fieldType
+			Case ByteTypeId;	J.set( fieldName, fld.GetByte(obj) )
+			Case DoubleTypeId;	J.set( fieldName, fld.GetDouble(obj) )
+			Case FloatTypeId;	J.set( fieldName, fld.GetFloat(obj) )
+			Case IntTypeId;		J.set( fieldName, fld.GetInt(obj) )
+			Case LongTypeId;	J.set( fieldName, fld.GetLong(obj) )
+			Case ShortTypeId;	J.set( fieldName, fld.GetShort(obj) )
+			Case SizeTTypeId;	J.set( fieldName, fld.GetSizeT(obj) )
+			Case StringTypeId
+				Local str:String = fld.GetString(obj)
+				If str; 		J.set( fieldName, str )
+			Case UIntTypeId;	J.set( fieldName, fld.GetUInt(obj) )
+			Case ULongTypeId;	J.set( fieldName, fld.GetULong(obj) )
+			Default
+				'DebugStop
+				Select True
+				Case Lower(fieldtype.name())="json"
+					'Local f:JSON = JSON( fld.get( obj ) )
+					Local o:Object = fld.get( obj )
+					If o; J.set( fieldname, JSON( o ).copy() )
+				Case fieldtype.extendsType( ArrayTypeID )
+					Local array:Object = fld.get( obj )
+					J.set( fieldname, _Array2JSON( array, fieldtype ) )
+				Case fieldtype.extendsType( ObjectTypeId )
+					Local o:Object = fld.get( obj )
+					If o
+						Local objectTypeId:TTypeId = TTypeId.ForObject(o)
+						J.set( fieldname, _Object2JSON( o ) )
+					End If
+				Default
+					DebugLog( "Unable to serialize "+fieldName+":"+fieldType.name() )
+				End Select
+			End Select
+			
+			'DebugLog( fieldName )
+			'fields.insert( fld.name(), fld.typeid.name() )
+		Next
+		Return J
+	End Function
+		
 	Public
 	
     ' Transpose a JSON object into a Blitzmax Object using Reflection 
     Method transpose:Object( typestr:String )
-        Publish( "log", "DEBG", "Transpose('"+typestr+"')" )
-        ' We can only transpose an object into a Type
-        If class<>"object" Return Null
-        Local typeid:TTypeId = TTypeId.ForName( typestr )
-        If Not typeid
-            Publish( "log", "DEBG", "- '"+typestr+"' is not a Blitzmax Type" )
-            Return Null
-        End If
-        Local invoke:Object = typeid.newObject()
-        If Not invoke Return Null
-    
-        ' Add Field names and types to map
-        Local fields:TMap = New TMap()
+        'SendUpdate( "log", "DEBG", "Transpose('"+typestr+"')" )
+		If class="object"; Return _JSON2Object( typestr )
+		Return SendUpdate( "log", "DEBG", "Unable to transpose "+class )
+	End Method
+
+	Private
+
+	Method _JSON2Array:Object( typestr:String )
+		Local typeid:TTypeId = TTypeId.ForName( typestr )        
+        If Not typeid; Return SendUpdate( "log", "DEBG", "- '"+typestr+"' is not a Blitzmax Type" )
+
+		' Get the list
+		Local list:TObjectList = TObjectList(value)
+		'DebugLog( list.count() + " elements" )
+		'DebugStop
+		
+		' Create an object of this type
+        Local array:Object = typeid.NewArray( list.count() )
+        If Not array Return SendUpdate( "log", "DEBG", "Unable to create array of type "+typestr )
+
+		' Loop through array elements
+		For Local index:Int = 0 Until list.count()
+			Local J:JSON = JSON( list.valueAtIndex( index ) )
+
+			typeid.setArrayElement( array, index, J._JSON2Object( typestr[..(Len(typestr)-2)] ) )
+		Next	
+		
+		Return array
+	End Method
+	
+	Method _JSON2Object:Object( typestr:String )
+	
+		' Get the typeid associated with the type string
+		Local typeid:TTypeId = TTypeId.ForName( typestr )        
+        If Not typeid; Return SendUpdate( "log", "DEBG", "- '"+typestr+"' is not a Blitzmax Type" )
+
+		' Create an object of this type
+        Local obj:Object = typeid.newObject()
+        If Not obj Return SendUpdate( "log", "DEBG", "Unable to create object of type "+typestr )
+   
+		' Get object map
+		Local map:TMap = TMap( value )
+		'DebugStop
+		
+		' Debug the field list
+		'For Local key:String = EachIn map.keys()
+		'	Print( ": "+ key )
+		'Next
+		
+		' Loop through object fields
         For Local fld:TField = EachIn typeid.EnumFields()
-            fields.insert( fld.name(), fld.typeid.name() )
+			' Check if field is marked for non-transpose
+			If fld.metadata("notranspose"); Continue
+
+			' Get field name using serialisedname if provided
+			Local fieldName:String = Lower( fld.name() )
+			If fld.metadata("serializedname"); fieldname = Lower( fld.metadata("serializedname") )
+			If fld.metadata("serialisedname"); fieldname = Lower( fld.metadata("serialisedname") )
+			
+			'DebugLog( "->"+fieldname )
+			
+            'fields.insert( fld.name(), fld.typeid.name() )
+			' Check if field exists in JSON
+			Local J:JSON = JSON( map.valueforkey( fieldname ) )
+			If Not J; Continue
+			
+'If fieldname = "workspacefolders"; DebugStop
+			
+			'DebugStop
+			Select fld.TypeID()			
+			Case ByteTypeId;	fld.setByte( obj, J.toByte() )
+			Case DoubleTypeId;	fld.setDouble( obj, J.toDouble() )
+			Case FloatTypeId;	fld.SetFloat( obj, J.toFloat() )
+			Case IntTypeId;		fld.setInt( obj, J.toInt() )
+			Case LongTypeId;	fld.setLong( obj, J.toLong() )
+			Case ShortTypeId;	fld.setShort( obj, J.toShort() )
+			Case SizeTTypeId;	fld.setSizeT( obj, J.toSize_T() )
+			Case StringTypeId;	fld.SetString( obj, J.tostring() )
+			Case UIntTypeId;	fld.setUInt( obj, J.toUInt() )
+			Case ULongTypeId;	fld.setULong( obj, J.toULong() )
+			Default
+				Select True
+				Case Lower( fld.typeid.name() ) = "json"
+					fld.set( obj, J )
+				Case fld.typeid.extendsType( ObjectTypeId )
+					'DebugStop
+					If fld.typeid.extendsType( ArrayTypeID )
+						' Type[]
+						'DebugLog( "Custom type arrays are not supported" )
+						'DebugStop
+						fld.set( obj, J._JSON2Array( fld.typeid.name() ) )
+					Else
+						' Type
+						fld.set( obj, J._JSON2Object( fld.typeid.name() ) )
+					End If
+				Default
+					'DebugStop
+					SendUpdate( "log", "ERRR", "Blitzmax type '"+fld.typeid.name()+"' cannot be transposed()" )
+				End Select
+			End Select
         Next
+
+'        ' Add Field names and types to map
+'        Local fields:TMap = New TMap()
+'        For Local fld:TField = EachIn typeid.EnumFields()
+'            fields.insert( fld.name(), fld.typeid.name() )
+'        Next
     
-        ' Extract MAP (of JSONs) from value
-        Local map:TMap = TMap( value )
-        If Not map Return Null
-        'logfile.write( "Map extracted from value successfully" )
-        'for local key:string = eachin map.keys()
-        '    logfile.write "  "+key+" = "+ JSON(map[key]).toString()
-        'next
+'        ' Extract MAP (of JSONs) from value
+'        Local map:TMap = TMap( value )
+'        If Not map Return Null
+'        'logfile.write( "Map extracted from value successfully" )
+'        'for local key:string = eachin map.keys()
+'        '    logfile.write "  "+key+" = "+ JSON(map[key]).toString()
+'        'next
+
+Rem		
 
         ' Transpose fields into object
         For Local fldname:String = EachIn fields.keys()
@@ -420,19 +636,21 @@ Type JSON
                         Local J:JSON = JSON(map[fldname])
                         fld.set( invoke, J )
                     Default
-                        Publish( "log", "ERRR", "Blitzmax type '"+fldtype+"' cannot be transposed()" )
+                        SendUpdate( "log", "ERRR", "Blitzmax type '"+fldtype+"' cannot be transposed()" )
                     End Select
                 Catch Exception:String
-                    Publish( "log", "CRIT", "Transpose exception" )
-                    Publish( "log", "CRIT", Exception )
+                    SendUpdate( "log", "CRIT", "Transpose exception" )
+                    SendUpdate( "log", "CRIT", Exception )
                 End Try
             'else
                 'logfile.write "-- Is null"
             End If
         Next
         Return invoke
-    End Method
-
+End Rem
+		Return obj
+   	End Method
+	
 '		##### JSON HELPER
 
     ' Set the value of a JSON
@@ -674,8 +892,9 @@ Type JSON
 '	End Method
 
 	' Event handler
-	Method publish( message:String, state:String, alt:String )
+	Method SendUpdate:Object( message:String, state:String, alt:String )
 		DebugLog( message + ", " + state + ", "+ alt )
+		Return Null
 	End Method
 
 	' Escape a string
