@@ -53,7 +53,7 @@ Type JSON
 			Self.value = value
 		Case JSON_NUMBER
 			Self.class = "number"
-			Self.value = String(Int(value))
+			Self.value = value	'String(Int(value))
 		Case JSON_NULL
 			Self.class = "keyword"
 			Self.value = "null"
@@ -250,6 +250,122 @@ Type JSON
 		Return Text
 	End Method
 
+	' Serialise a Blitzmax object into JSON
+	Function serialise:JSON( obj:Object )	' British English
+		Return _Object2JSON( obj )
+	End Function
+	Function serialize:JSON( obj:Object )	' American English
+		Return _Object2JSON( obj )
+	End Function
+		
+	Private
+	
+	Function _Object2JSON:JSON( obj:Object )
+		Local typeid:TTypeId = TTypeId.ForObject( obj )
+		Local J:JSON = New JSON()
+		For Local fld:TField = EachIn typeid.EnumFields()
+			
+			'DebugStop
+			If fld.metadata("noserialize") Or fld.metadata("noserialise"); Continue
+			
+			Local fieldType:TTypeId = fld.TypeID()
+			Local fieldName:String = fld.name()			
+			If fld.metadata("serializedname"); fieldname = fld.metadata("serializedname")
+			If fld.metadata("serialisedname"); fieldname = fld.metadata("serialisedname")
+
+			Select fieldType
+			Case ByteTypeId;	J.set( fieldName, fld.GetByte(obj) )
+			Case DoubleTypeId;	J.set( fieldName, fld.GetDouble(obj) )
+			Case FloatTypeId;	J.set( fieldName, fld.GetFloat(obj) )
+			Case IntTypeId;		J.set( fieldName, fld.GetInt(obj) )
+			Case LongTypeId;	J.set( fieldName, fld.GetLong(obj) )
+			Case ShortTypeId;	J.set( fieldName, fld.GetShort(obj) )
+			Case SizetTypeId;	J.set( fieldName, fld.GetSizeT(obj) )
+			Case StringTypeId
+				Local str:String = fld.GetString(obj)
+				If str; 		J.set( fieldName, str )
+			Case UIntTypeId;	J.set( fieldName, fld.GetUInt(obj) )
+			Case ULongTypeId;	J.set( fieldName, fld.GetULong(obj) )
+			Default
+				'DebugStop
+				Select True
+				Case fieldtype.extendsType( ArrayTypeID )
+					Local array:Object = fld.get( obj )
+					J.set( fieldname, _Array2JSON( array, fieldtype ) )
+				Case fieldtype.extendsType( ObjectTypeId )
+					Local o:Object = fld.get( obj )
+					If o
+						Local objectTypeId:TTypeId = TTypeId.ForObject(o)
+						J.set( fieldname, _Object2JSON( o ) )
+					End If
+				Default
+					DebugLog( "Unable to serialize "+fieldName+":"+fieldType.name() )
+				End Select
+			End Select
+			
+			'DebugLog( fieldName )
+			'fields.insert( fld.name(), fld.typeid.name() )
+		Next
+		Return J
+	End Function
+
+	Function _Array2JSON:JSON( array:Object, fieldtype:TTypeId )
+		Local J:JSON = New JSON( JSON_ARRAY )
+		Local length:Int, dimensions:Int
+		Try
+			length = fieldtype.arrayLength( array )
+		Catch e:String
+			length = 0
+		End Try
+		Try
+			dimensions = fieldtype.arrayDimensions( array )
+		Catch e:String
+			dimensions = 0
+		End Try
+		If length = 0 Or dimensions = 0; Return J
+		
+		Local elementTypeid:TTypeId = fieldtype.ElementType()
+		'DebugStop
+		For Local e:Int = 0 Until length
+			'Local element:JSON
+			Local fieldname:String = elementTypeID.Name()
+			'DebugStop
+			Select ElementTypeId
+			Case ByteTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetByteArrayElement( array,e ) ))
+			Case DoubleTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetDoubleArrayElement( array,e ) ))
+			Case FloatTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetFloatArrayElement( array,e ) ))
+			Case IntTypeId;		J.addlast( New JSON( JSON_NUMBER, fieldtype.GetIntArrayElement( array,e ) ))
+			Case LongTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetLongArrayElement( array,e ) ))
+			Case ShortTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetShortArrayElement( array,e ) ))
+			Case SizetTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetSizeTArrayElement( array,e ) ))
+			Case StringTypeId
+				Local str:String = fieldtype.GetStringArrayElement( array,e )
+				If str; 		J.addlast( New JSON( JSON_STRING, str ) )
+			Case UIntTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetUIntArrayElement( array,e ) ))
+			Case ULongTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetULongArrayElement( array,e ) ))
+			Default
+				'DebugStop
+				Select True
+				Case elementTypeID.extendsType( ArrayTypeID )
+					Local a:Object = elementTypeID.GetArrayElement( array,e )
+					J.AddLast( _Array2JSON( a, elementTypeID ) )
+				Case elementTypeID.extendsType( ObjectTypeId )
+					Local o:Object = fieldtype.GetArrayElement( array,e )
+					'Local o:Object = fld.get( obj )
+					If o
+						Local objectTypeId:TTypeId = TTypeId.ForObject(o)
+						J.AddLast( _Object2JSON( o ) )
+					End If
+				Default
+					DebugLog( "Unable to serialize "+fieldName+":"+fieldType.name() )
+				End Select
+			End Select
+		Next
+		Return J
+	End Function
+	
+	Public
+	
     ' Transpose a JSON object into a Blitzmax Object using Reflection 
     Method transpose:Object( typestr:String )
         Publish( "log", "DEBG", "Transpose('"+typestr+"')" )
@@ -344,7 +460,19 @@ Type JSON
 		Self.value = String(value)
     End Method
 
+    Method set( value:Float )
+        ' If existing value is NOT a number, overwrite it
+		Self.class="number"
+		Self.value = String(value)
+    End Method
+
     Method Set( route:String, value:String )
+		'_set( route, value, "string" )
+		Local J:JSON = find( route, True )	' Find route and create if missing
+		If J ; J.set( value )
+    End Method
+
+    Method Set( route:String, value:Float )
 		'_set( route, value, "string" )
 		Local J:JSON = find( route, True )	' Find route and create if missing
 		If J ; J.set( value )
