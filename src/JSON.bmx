@@ -1,7 +1,7 @@
 
 '	JSON MODULE FOR BLITZMAX
 '	(c) Copyright Si Dunford, July 2021, All Rights Reserved
-'	V1.8
+'	V2.5
 
 Const JSON_INVALID:Int 	= 0
 Const JSON_ARRAY:Int 	= 1
@@ -285,18 +285,28 @@ Type JSON
 		'	Local J:JSON = items[key]
 		'	If J Return J
 		'End If
-		Return Null
+		'Return Null
 	End Method
 	
-	' Set value in a JSON array using integer index
-'	Method operator []( key:Int, newvalue:JSON )
-'		If class <> "array" Return
-'		Local items:TObjectList = TObjectList( value )
-'		If key>items.count Or key<0 Return
-'		Local item:JSON = JSON( items.valueatIndex(key) )
-'		item.set( newvalue )
-'	End Method
-
+	' Set Values
+	Method operator []=( route:String, value:String )
+		set( route, value )
+	End Method
+	Method operator []=( route:String, value:Int )
+		set( route, value )
+	End Method
+	Method operator []=( route:String, value:Float )
+		set( route, value )
+	End Method
+	Method operator []=( route:String, value:JSON )
+		set( route, value )
+	End Method
+	' 14/12/22, Operator overload doesn;t seem to allow "Object" types as params
+	'Method operator []=( route:String, value:Object )
+	'	Local J:JSON = JSON.serialise( value )
+	'	set( route, J )
+	'End Method
+	
 	' Produce a stFring representation of a JSON datatype
     Method Stringify:String()
 		Local txt:String
@@ -653,7 +663,7 @@ End Rem
 	
 '		##### JSON HELPER
 
-	public
+	Public
 
     ' Set the value of a JSON
     Method set( value:String )

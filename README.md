@@ -2,7 +2,7 @@
 
 BlitzMax JSON by Scaremonger.
 
-**VERSION:** 2.4
+**VERSION:** 2.5
 
 # DEPENDENCIES
 * [BlitzMax-NG](https://blitzmax.org/downloads/)
@@ -89,6 +89,20 @@ Local J:JSON = JSON.Parse( JText )
 Local characters:JSON = J.find("story|Jack and Jill|characters")
 Print( characters.Prettify() )
 ```
+**Manual JSON Creation**
+```
+Import bmx.json
+
+Local J:JSON = New JSON()
+J["id"] = "31"
+J["name"] = "Scaremonger"
+J["age"] = 99
+J["addresses|home"] = "si@example.com"
+J["addresses|work"] = "scaremonger@example.com"
+
+Print( J.prettify() )
+```
+
 **BMX Type Serialisation**
 ```
 Import bmx.json
@@ -161,3 +175,5 @@ V2.1 | 09 NOV 21 | Fixed Escaping issue with strings containing quotes
 V2.2 | 06 DEC 21 | Updated size() to support objects<br> Added search() and is()
 V2.3 | 12 DEC 22 | Added Function serialize()<br>Fixed 'Floating point number as string' issue
 V2.4 | 13 DEC 22 | Added toByte(), toDouble(), toFloat(), toLong(), toShort(), toSize_T(), toUInt() and toULong()<br>Added copy()<br>Updated Transpose()<br>Fixed serialise bug when serialising Type JSON.
+V2.5 | 14 DEC 22 | Added Operator overloading to allow easy creation of JSON
+
