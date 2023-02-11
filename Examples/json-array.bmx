@@ -5,14 +5,6 @@ SuperStrict
 
 Import bmx.json
 
-'Import bmx.lexer
-'Import bmx.parser
-'Import brl.objectlist
-
-'Include "../json.mod/src/JSON.bmx"
-'Include "../json.mod/src/TJSONLexer.bmx"
-'Include "../json.mod/src/TJSONParser.bmx"
-
 ' Create JSON from string
 Local JText:String = "{'test':true,'example':['one','two','three'],'items':[{'section':'test'},{'section':'bls'},{'section':'lsp'},{'section':'blitzmax'}]}"
 JText = JText.Replace( "'", Chr(34) )
@@ -28,13 +20,17 @@ Print "~nLOOP THROUGH ARRAY ITEMS:"
 'DebugStop
 
 Local items:JSON = response.find( "params|items" )
-Print "  CLASS: "+items.getClassName()
-Print "  SIZE:  "+items.size()
+If items
+	Print "  CLASS: "+items.getClassName()
+	Print "  SIZE:  "+items.size()
 
-For Local a:Int = 0 Until items.size()
-	Local JA:JSON = items[a]
-	Print "  items["+a+"] == "+JA.stringify()
-Next
+	For Local a:Int = 0 Until items.size()
+		Local JA:JSON = items[a]
+		Print "  items["+a+"] == "+JA.stringify()
+	Next
+Else
+	Print "ITEMS RETURNED NULL" 
+End If
 
 Print "~nLOOP THROUGH ARRAY WITH FOREACH"
 
@@ -57,8 +53,8 @@ Print "    CLASS: "+array.getClassName
 Print "    VALUE: "+array.stringify()
 
 'DebugStop
-array.addLast( New JSON( JSON_BOOLEAN, False ) )
-array.addFirst( New JSON( JSON_STRING, "XYZ" ) )
+array.addLast( New JSON( JBOOLEAN, False ) )
+array.addFirst( New JSON( JSTRING, "XYZ" ) )
 
 Print "  AFTER INSERT:"
 Print "    CLASS: "+array.getClassName

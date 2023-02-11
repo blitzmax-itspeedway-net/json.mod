@@ -23,21 +23,7 @@ Type TJSONParser Extends TParser
 	Method parse_json:JSON()
 
 		'	RUN THE LEXER
-		'Print "~nSTARTING LEXER:"
-		'Local start:Int, finish:Int
-		'start = MilliSecs()
-'DebugStop
-		lexer.run()
-		'finish = MilliSecs()
-		'Print( "LEXER.TIME: "+(finish-start)+"ms" )
-	
-		'Print( "STARTING LEXER DEBUG:")
-		'Print( lexer.reveal() )
-'DebugStop
-		'	RUN THE PARSER
-		
-		'Print "~nSTARTING PARSER:"
-		'Publish( "PARSE-START", Null )		
+		lexer.run()	
 		token = lexer.reset()
 		'Local program:TASTNode = parse_program()
 		
@@ -45,7 +31,17 @@ Type TJSONParser Extends TParser
 		'Local n:TToken = lexer.getnext()
 		'If lexer.getnext().id <> TK_lbrace Return InvalidNode( "Expected '{'" )
 		'If token.id <> TK_lbrace Return InvalidNode( "Expected '{'" )
-		Local J:JSON = ReadObject()
+		
+		Local J:JSON
+		Select token.id
+		Case TK_lbrace
+			J = ReadObject()
+		Case TK_lcrotchet
+			J = ReadArray()
+		Default
+			J = New JSON( JINVALID )
+		End Select
+		'
 		If J.isInvalid() Return J 
 		advance()
 		If token.id <> TK_EOF ; Return InvalidNode( "'"+token.value+"' was unexpected" )
@@ -234,7 +230,7 @@ End Rem
 			Try
 				' Termination
 				If Not token Or token.id = TK_EOF ; Return InvalidNode( "Unexpected end" )
-				If token.id = TK_rbrace ; Return New JSON( "object", node )		
+				If token.id = TK_rbrace ; Return New JSON( JOBJECT, node )		
 				
 				' WE MUST ALWAYS EXPECT A QUOTED STRING FOLLOWED BY A COLON
 				
@@ -242,7 +238,7 @@ End Rem
 				If Not key Return InvalidNode( "Expected quoted String" )
 				If Not eat( TK_Colon, Null ) Return InvalidNode( "Expected ':'" )
 				
-				Local name:String = Lower( Dequote( key.value ))
+				Local name:String = Dequote( key.value )
 				
 				' NEXT COMES THE CONTENT
 				
@@ -260,15 +256,15 @@ End Rem
 					'node.insert( name, New JSON( "array", value ) )
 					advance()
 				Case TK_QSTRING
-					node.insert( name, New JSON( "string", dequote(token.value) ) )
+					node.insert( name, New JSON( JSTRING, dequote(token.value) ) )
 					advance()
 				Case TK_NUMBER
-					node.insert( name, New JSON( "number", token.value ) )
+					node.insert( name, New JSON( JNUMBER, token.value ) )
 					advance()
 				Case TK_ALPHA
 					Local value:String = token.value
 					If value="true" Or value="false" Or value="null"
-						node.insert( name, New JSON( "keyword", token.value ) )
+						node.insert( name, New JSON( JKEYWORD, token.value ) )
 						advance()
 					Else
 						Return InvalidNode( "Unknown identifier" )
@@ -309,7 +305,7 @@ DebugStop
 			Try
 				' Termination
 				If Not token Or token.id = TK_EOF ; Return InvalidNode( "Unexpected end" )
-				If token.id = TK_rcrotchet ; Return New JSON( "array", node )		
+				If token.id = TK_rcrotchet ; Return New JSON( JARRAY, node )		
 
 				' NEXT COMES THE CONTENT
 				
@@ -325,15 +321,15 @@ DebugStop
 					node.addlast( value )
 					advance()
 				Case TK_QSTRING
-					node.addlast( New JSON( "string", dequote(token.value) ) )
+					node.addlast( New JSON( JSTRING, dequote(token.value) ) )
 					advance()
 				Case TK_NUMBER
-					node.addlast( New JSON( "number", token.value ) )
+					node.addlast( New JSON( JNUMBER, token.value ) )
 					advance()
 				Case TK_ALPHA
 					Local value:String = token.value
 					If value="true" Or value="false" Or value="null"
-						node.addlast( New JSON( "keyword", token.value ) )
+						node.addlast( New JSON( JKEYWORD, token.value ) )
 						advance()
 					Else
 						Return InvalidNode( "Unknown identifier" )
@@ -367,7 +363,7 @@ DebugStop
     Method InvalidNode:JSON( message:String = "Invalid JSON", token:TToken=Null )
         'print( "Creating invalid node at "+linenum+","+linepos )
         'print( errtext )
-		Local J:JSON = New JSON( "invalid", message )
+		Local J:JSON = New JSON( JINVALID, message )
 		J.errNum  = 1
 		J.errText = message
 		If token

@@ -1,21 +1,32 @@
 
 '	JSON MODULE FOR BLITZMAX
 '	(c) Copyright Si Dunford, July 2021, All Rights Reserved
-'	V2.5
+'	V3.0
 
-Const JSON_INVALID:Int 	= 0
-Const JSON_ARRAY:Int 	= 1
-Const JSON_BOOLEAN:Int 	= 2
-Const JSON_KEYWORD:Int 	= 3
-Const JSON_NUMBER:Int 	= 4
-Const JSON_NULL:Int 	= 5
-Const JSON_OBJECT:Int 	= 6
-Const JSON_STRING:Int 	= 7
+' Version 3.0 constants
+Const JINVALID:Int 	= 0
+Const JARRAY:Int 	= 1
+Const JBOOLEAN:Int 	= 2
+Const JKEYWORD:Int 	= 3
+Const JNUMBER:Int 	= 4
+Const JNULL:Int 	= 5
+Const JOBJECT:Int 	= 6
+Const JSTRING:Int 	= 7
+
+' Version 2.5 constants - Depreciated
+'Const JSON_INVALID:Int 	= 0
+'Const JSON_ARRAY:Int 	= 1
+'Const JSON_BOOLEAN:Int 	= 2
+'Const JSON_KEYWORD:Int 	= 3
+'Const JSON_NUMBER:Int 	= 4
+'Const JSON_NULL:Int 	= 5
+'Const JSON_OBJECT:Int 	= 6
+'Const JSON_STRING:Int 	= 7
 
 Type JSON
 	Private
 
-    Field class:String
+    Field class:Int
 	Field value:Object
 
 	Public
@@ -27,49 +38,66 @@ Type JSON
     Field errText:String = ""
 
     Method New()
-		Self.class = "object"
+		Self.class = JOBJECT
 		Self.value = New TMap()
 	End Method
 		
     Method New( jtype:Int, value:String="" )
 		Select jtype			
-		Case JSON_ARRAY
-			Self.class = "array"
+		Case JARRAY
+			Self.class = JARRAY
 			Self.value = New TObjectList()
 			' Value Argument Ignored
-		Case JSON_BOOLEAN
-			Self.class = "keyword"
+		Case JBOOLEAN
+			Self.class = JKEYWORD
 			value = Lower(value)
 			Select value
 			Case "true", "false"	; Self.value = value
 			Case "1"				; Self.value = "true"
 			Default					; Self.value = "false"
 			End Select
-		Case JSON_INVALID
-			Self.class = "invalid"
+		Case JINVALID
+			Self.class = JINVALID
 			Self.value = ""
-		Case JSON_KEYWORD
-			Self.class = "keyword"
+		Case JKEYWORD
+			Self.class = JKEYWORD
 			Self.value = value
-		Case JSON_NUMBER
-			Self.class = "number"
+		Case JNUMBER
+			Self.class = JNUMBER
 			Self.value = value	'String(Int(value))
-		Case JSON_NULL
-			Self.class = "keyword"
+		Case JNULL
+			Self.class = JNULL
 			Self.value = "null"
-		Case JSON_STRING
-			Self.class = "string"
+		Case JSTRING
+			Self.class = JSTRING
 			Self.value = value
 		Default
-			Self.class = "object"
+			Self.class = JOBJECT
 			Self.value = New TMap()
 			' Value Argument Ignored
 		End Select
     End Method
 
-    Method New( class:String, value:Object )
-        Self.class = class
-        Self.value = value
+    Method New( jtype:Int, value:Object )
+		Self.class = jtype
+		Select jtype
+		Case JARRAY
+			Self.value = TObjectList(value)
+			If Self.value; Return
+		Case JOBJECT
+			Self.value = TMap(value)
+			If Self.value; Return
+		End Select
+		' Invalid...
+		Self.class = JINVALID
+		Self.value = ""
+	End Method
+
+	' Create a JARRAY from a string array
+    Method New( value:String[] )
+		For Local str:String = EachIn String[](value)
+			addlast( New JSON( JSTRING, str ) )
+		Next
     End Method
 
 	' Request location of last error
@@ -77,39 +105,46 @@ Type JSON
 		Return errtext+" ["+errnum+"] at "+errline+":"+errpos
 	End Method
 	
-	Private
+	Public
 	
 	' Get integer representation of the class
 	' NOTE: Internally these are strings, but that may change at some point
 	Method getClassId:Int()
 		Select class
-		Case "array"	;	Return JSON_ARRAY
-		Case "keyword"
+		Case JARRAY, JNUMBER, JSTRING, JOBJECT
+			Return class
+		Case JKEYWORD
 			Select String(value)
-			Case "true", "false"	;	Return JSON_BOOLEAN
-			Case "null"				;	Return JSON_NULL
+			Case "true", "false"	;	Return JBOOLEAN
+			Case "null"				;	Return JNULL
 			End Select
-			Return JSON_KEYWORD
-		Case "number"	;	Return JSON_NUMBER
-		Case "string"	;	Return JSON_STRING
-		Case "object"	;	Return JSON_OBJECT
+			Return JKEYWORD
 		End Select
-		Return JSON_INVALID
+		Return JINVALID
 	End Method
 
 	' Get a string representation of the class
-	' NOTE: Internally these are strings, but that may change at some point
 	Method getClassName:String()
-		Return class
+		Select class
+		Case JARRAY		;	Return "array"
+		Case JNUMBER	;	Return "number"
+		Case JSTRING	;	Return "string"
+		Case JOBJECT	;	Return "object"
+		Case JKEYWORD
+			Select String(value)
+			Case "true", "false"	;	Return "boolean"
+			Case "null"				;	Return "null"
+			End Select
+			Return JKEYWORD
+		End Select
+		Return JINVALID
 	End Method
-	
-	Public
 	
 	' Copy / Duplicate a JSON type
 	Method copy:JSON()
 		'DebugStop
 		Select class
-		Case "array"
+		Case JARRAY
 			Local J:JSON = New JSON()
 			J.class = class
 			J.value = New TObjectList()
@@ -118,10 +153,10 @@ Type JSON
 				J.addlast( item.copy() )
 			Next
 			Return J
-		Case "keyword";		Return New JSON( JSON_KEYWORD, String( value ) )
-		Case "number";		Return New JSON( JSON_NUMBER, String( value ) )
-		Case "string";		Return New JSON( JSON_STRING, String( value ) )
-		Case "object"
+		Case JKEYWORD	;	Return New JSON( JKEYWORD, String( value ) )
+		Case JNUMBER	;	Return New JSON( JNUMBER, String( value ) )
+		Case JSTRING	;	Return New JSON( JSTRING, String( value ) )
+		Case JOBJECT
 			Local J:JSON = New JSON()
 			J.class = class
 			'J.value = New TMap()
@@ -131,18 +166,18 @@ Type JSON
 			Next
 			Return J
 		End Select
-		Return New JSON( JSON_INVALID )
+		Return New JSON( JINVALID )
 	End Method
 
     Method toArray:JSON[]()
-		If class<>"array" Return [New JSON( "invalid", "Node is not an array" )]
+		If class<>JARRAY Return [New JSON( JINVALID, "Node is not an array" )]
 		Return JSON[](TObjectList(value).toArray())
 	End Method
 	
 	Method toByte:Byte()
 		Select class
-		Case "number","string"	;	Return Long(String(value))
-		Case "keyword"
+		Case JNUMBER,JSTRING	;	Return Long(String(value))
+		Case JKEYWORD
 			Select String(value)
 			Case "true"			;	Return True
 			Case "false","null"	;	Return False
@@ -153,8 +188,8 @@ Type JSON
 	
 	Method toDouble:Double()
 		Select class
-		Case "number","string"	;	Return Double(String(value))
-		Case "keyword"
+		Case JNUMBER,JSTRING	;	Return Double(String(value))
+		Case JKEYWORD
 			Select String(value)
 			Case "true"			;	Return True
 			Case "false","null"	;	Return False
@@ -165,8 +200,8 @@ Type JSON
 	
 	Method toFloat:Float()
 		Select class
-		Case "number","string"	;	Return Float(String(value))
-		Case "keyword"
+		Case JNUMBER,JSTRING	;	Return Float(String(value))
+		Case JKEYWORD
 			Select String(value)
 			Case "true"			;	Return True
 			Case "false","null"	;	Return False
@@ -177,8 +212,8 @@ Type JSON
 
     Method toInt:Int()
 		Select class
-		Case "number","string"	;	Return Int(String(value))
-		Case "keyword"
+		Case JNUMBER,JSTRING	;	Return Int(String(value))
+		Case JKEYWORD
 			Select String(value)
 			Case "true"			;	Return True
 			Case "false","null"	;	Return False
@@ -189,8 +224,8 @@ Type JSON
 	
     Method toLong:Long()
 		Select class
-		Case "number","string"	;	Return Long(String(value))
-		Case "keyword"
+		Case JNUMBER,JSTRING	;	Return Long(String(value))
+		Case JKEYWORD
 			Select String(value)
 			Case "true"			;	Return True
 			Case "false","null"	;	Return False
@@ -201,8 +236,8 @@ Type JSON
 	
 	Method toShort:Short()
 		Select class
-		Case "number","string"	;	Return Short(String(value))
-		Case "keyword"
+		Case JNUMBER,JSTRING	;	Return Short(String(value))
+		Case JKEYWORD
 			Select String(value)
 			Case "true"			;	Return True
 			Case "false","null"	;	Return False
@@ -217,8 +252,8 @@ Type JSON
 
 	Method toSize_T:Size_T()
 		Select class
-		Case "number","string"	;	Return Size_T(String(value))
-		Case "keyword"
+		Case JNUMBER,JSTRING	;	Return Size_T(String(value))
+		Case JKEYWORD
 			Select String(value)
 			Case "true"			;	Return True
 			Case "false","null"	;	Return False
@@ -232,38 +267,56 @@ Type JSON
 	End Method
 
 	Method toUInt:UInt()
+		Select class
+		Case JNUMBER,JSTRING	;	Return UInt(String(value))
+		Case JKEYWORD
+			Select String(value)
+			Case "true"			;	Return True
+			Case "false","null"	;	Return False
+			End Select
+		End Select
+		Return 0
 	End Method
 	
 	Method toULong:ULong()
+		Select class
+		Case JNUMBER,JSTRING	;	Return ULong(String(value))
+		Case JKEYWORD
+			Select String(value)
+			Case "true"			;	Return True
+			Case "false","null"	;	Return False
+			End Select
+		End Select
+		Return 0
 	End Method
 	
     Method isValid:Int()
-		Return ( class <> "invalid" )
+		Return ( class <> JINVALID )
 	End Method
 
     Method isInvalid:Int()
-		Return ( class = "invalid" )
+		Return ( class = JINVALID )
 	End Method
 
 	Method isTrue:Int()
-		Return (class = "keyword" And String(value) = "true")
+		Return (class = JKEYWORD And String(value) = "true")
 	End Method
 
 	Method isFalse:Int()
-		Return (class = "keyword" And String(value) = "false")
+		Return (class = JKEYWORD And String(value) = "false")
 	End Method
 
 	Method isNull:Int()
-		Return (class = "keyword" And String(value) = "null")
+		Return (class = JKEYWORD And String(value) = "null")
 	End Method
 
-	Method is:Int( criteria:String )
-		Return ( class = Lower(criteria) )
+	Method is:Int( criteria:Int )
+		Return ( class = criteria )
 	End Method	
 
 	' Get value of a JSON object's child using string index
 	Method operator []:String( key:String )
-        If class = "object"
+        If class = JOBJECT
 			Local map:TMap = TMap( value )
 			If map
 				'DebugStop
@@ -277,7 +330,7 @@ Type JSON
 
 	' Get value in a JSON array using integer index
 	Method operator []:JSON( key:Int )
-		If class <> "array" Return Null
+		If class <> JARRAY Return Null
 		Local items:TObjectList = TObjectList( value )
 		If key>items.count Or key<0 Return Null
 		Return JSON( items.valueatIndex(key) )
@@ -313,7 +366,7 @@ Type JSON
 		'DebugStop
 		'If Not j Return "~q~q"
 		Select class    ' JSON NODE TYPES
-		Case "object"
+		Case JOBJECT
 			Local map:TMap = TMap( value )
 			txt :+ "{"
 			If map
@@ -327,7 +380,7 @@ Type JSON
 
 			End If
 			txt :+ "}"
-        Case "array"
+        Case JARRAY
 			txt :+ "["
             'For Local J:JSON = EachIn JSON[](value)
             '    txt :+ J.stringify()+","
@@ -338,16 +391,16 @@ Type JSON
 			' Strip trailing comma
 			If txt.endswith(",") txt = txt[..(Len(txt)-1)]
 			txt :+ "]"
-		Case "number"
+		Case JNUMBER
 			txt :+ String(value)
-		Case "string"
+		Case JSTRING
 			txt :+ "~q"+escape(String(value))+"~q"
-		Case "keyword"
+		Case JKEYWORD
 			txt :+ escape(String(value))
-		Case "invalid"
+		Case JINVALID
 			txt :+ "#ERR#"
 		Default
-			SendUpdate( "log", "DEBG", "INVALID SYMBOL: '"+class+"', ''" )
+			fail( "INVALID SYMBOL: '"+class+"', ''" )
 		End Select
 		Return txt
 	End Method
@@ -388,7 +441,7 @@ Type JSON
 	Private
 
 	Function _Array2JSON:JSON( array:Object, fieldtype:TTypeId )
-		Local J:JSON = New JSON( JSON_ARRAY )
+		Local J:JSON = New JSON( JARRAY )
 		Local length:Int, dimensions:Int
 		Try
 			length = fieldtype.arrayLength( array )
@@ -409,18 +462,18 @@ Type JSON
 			Local fieldname:String = elementTypeID.Name()
 			'DebugStop
 			Select ElementTypeId
-			Case ByteTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetByteArrayElement( array,e ) ))
-			Case DoubleTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetDoubleArrayElement( array,e ) ))
-			Case FloatTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetFloatArrayElement( array,e ) ))
-			Case IntTypeId;		J.addlast( New JSON( JSON_NUMBER, fieldtype.GetIntArrayElement( array,e ) ))
-			Case LongTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetLongArrayElement( array,e ) ))
-			Case ShortTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetShortArrayElement( array,e ) ))
-			Case SizeTTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetSizeTArrayElement( array,e ) ))
+			Case ByteTypeId;	J.addlast( New JSON( JNUMBER, fieldtype.GetByteArrayElement( array,e ) ))
+			Case DoubleTypeId;	J.addlast( New JSON( JNUMBER, fieldtype.GetDoubleArrayElement( array,e ) ))
+			Case FloatTypeId;	J.addlast( New JSON( JNUMBER, fieldtype.GetFloatArrayElement( array,e ) ))
+			Case IntTypeId;		J.addlast( New JSON( JNUMBER, fieldtype.GetIntArrayElement( array,e ) ))
+			Case LongTypeId;	J.addlast( New JSON( JNUMBER, fieldtype.GetLongArrayElement( array,e ) ))
+			Case ShortTypeId;	J.addlast( New JSON( JNUMBER, fieldtype.GetShortArrayElement( array,e ) ))
+			Case SizeTTypeId;	J.addlast( New JSON( JNUMBER, fieldtype.GetSizeTArrayElement( array,e ) ))
 			Case StringTypeId
 				Local str:String = fieldtype.GetStringArrayElement( array,e )
-				If str; 		J.addlast( New JSON( JSON_STRING, str ) )
-			Case UIntTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetUIntArrayElement( array,e ) ))
-			Case ULongTypeId;	J.addlast( New JSON( JSON_NUMBER, fieldtype.GetULongArrayElement( array,e ) ))
+				If str; 		J.addlast( New JSON( JSTRING, str ) )
+			Case UIntTypeId;	J.addlast( New JSON( JSTRING, fieldtype.GetUIntArrayElement( array,e ) ))
+			Case ULongTypeId;	J.addlast( New JSON( JSTRING, fieldtype.GetULongArrayElement( array,e ) ))
 			Default
 				'DebugStop
 				Select True
@@ -501,16 +554,16 @@ Type JSON
 	
     ' Transpose a JSON object into a Blitzmax Object using Reflection 
     Method transpose:Object( typestr:String )
-        'SendUpdate( "log", "DEBG", "Transpose('"+typestr+"')" )
-		If class="object"; Return _JSON2Object( typestr )
-		Return SendUpdate( "log", "DEBG", "Unable to transpose "+class )
+        'fail( "Transpose('"+typestr+"')" )
+		If class=JOBJECT; Return _JSON2Object( typestr )
+		Return fail( "Unable to transpose "+class )
 	End Method
 
 	Private
 
 	Method _JSON2Array:Object( typestr:String )
 		Local typeid:TTypeId = TTypeId.ForName( typestr )        
-        If Not typeid; Return SendUpdate( "log", "DEBG", "- '"+typestr+"' is not a Blitzmax Type" )
+        If Not typeid; Return fail( "- '"+typestr+"' is not a Blitzmax Type" )
 
 		' Get the list
 		Local list:TObjectList = TObjectList(value)
@@ -519,7 +572,7 @@ Type JSON
 		
 		' Create an object of this type
         Local array:Object = typeid.NewArray( list.count() )
-        If Not array Return SendUpdate( "log", "DEBG", "Unable to create array of type "+typestr )
+        If Not array Return fail( "Unable to create array of type "+typestr )
 
 		' Loop through array elements
 		For Local index:Int = 0 Until list.count()
@@ -535,11 +588,11 @@ Type JSON
 	
 		' Get the typeid associated with the type string
 		Local typeid:TTypeId = TTypeId.ForName( typestr )        
-        If Not typeid; Return SendUpdate( "log", "DEBG", "- '"+typestr+"' is not a Blitzmax Type" )
+        If Not typeid; Return fail( "- '"+typestr+"' is not a Blitzmax Type" )
 
 		' Create an object of this type
         Local obj:Object = typeid.newObject()
-        If Not obj Return SendUpdate( "log", "DEBG", "Unable to create object of type "+typestr )
+        If Not obj Return fail( "Unable to create object of type "+typestr )
    
 		' Get object map
 		Local map:TMap = TMap( value )
@@ -598,7 +651,7 @@ Type JSON
 					End If
 				Default
 					'DebugStop
-					SendUpdate( "log", "ERRR", "Blitzmax type '"+fld.typeid.name()+"' cannot be transposed()" )
+					fail( "Blitzmax Type '"+fld.typeid.name()+"' cannot be transposed()" )
 				End Select
 			End Select
         Next
@@ -669,16 +722,16 @@ End Rem
     Method set( value:String )
 		If value.startswith("~q") And value.endswith("~q")
 			' STRING
-			Self.class = "string"
+			Self.class = JSTRING
 			Self.value = dequote(value)
 		Else
-			If value = "true" Or value = "false" Or value = "null"
+			If Lower(value) = "true" Or Lower(value) = "false" Or Lower(value) = "null"
 				' KEYWORD (true/false/null)
-				Self.class = "keyword"
-				Self.value = value
+				Self.class = JKEYWORD
+				Self.value = Lower(value)
 			Else
 				' Treat it as a string
-				Self.class = "string"
+				Self.class = JSTRING
 				Self.value = value
 			End If
 		End If
@@ -686,13 +739,13 @@ End Rem
 
     Method set( value:Int )
         ' If existing value is NOT a number, overwrite it
-		Self.class="number"
+		Self.class = JNUMBER
 		Self.value = String(value)
     End Method
 
     Method set( value:Float )
         ' If existing value is NOT a number, overwrite it
-		Self.class="number"
+		Self.class = JNUMBER
 		Self.value = String(value)
     End Method
 
@@ -749,7 +802,7 @@ End Rem
 		Else
 			' If child is specified then I MUST be an object right?
 			Local child:JSON, map:TMap
-			If class="object" ' Yay, I am an object.
+			If class=JOBJECT ' Yay, I am an object.
 				If value=Null
 					value = New TMap()
 				End If
@@ -758,15 +811,20 @@ End Rem
 				If Not createme Return New JSON() ' Not found
 				' I must now evolve into an object, destroying my previous identity!
 				map = New TMap()
-				class = "object"
+				class = JOBJECT
 				value = map
 			End If
 			' Does child exist?
 			child = JSON( map.valueforkey( path[0] ) )
+
+'For Local k:String = EachIn map.keys()
+'	Print k
+'Next
+
 			If Not child 
 				If Not createme Return New JSON() ' Not found
 				' Add a new child
-				child = New JSON( "string", "" )
+				child = New JSON( JSTRING, "" )
 				map.insert( path[0], child )
 			End If
 			Return child.find( path[1..], createme )
@@ -798,7 +856,7 @@ End Rem
 		Else
 			' If child is specified then I MUST be an object right?
 			Local child:JSON, map:TMap
-			If class="object" ' Yay, I am an object.
+			If class=JOBJECT ' Yay, I am an object.
 				If value=Null
 					value = New TMap()
 				End If
@@ -815,7 +873,7 @@ End Rem
 
     Method contains:Int( name:String )		
 		' Only an Object contains named children
-		If class<>"object" ; Return False
+		If class<>JOBJECT ; Return False
 		
 		' Check I am not empty!
 		If Not value ; Return False
@@ -828,9 +886,9 @@ End Rem
 	' Get SIZE of an ARRAY
 	Method size:Int()
 		Select class
-		Case "array"
+		Case JARRAY
 			Return TObjectList(value).count()
-		Case "class"
+		Case JOBJECT
 			Local map:TMap = TMap( value )
 			If Not map Return 0
 			Local count:Int = 0
@@ -861,7 +919,7 @@ End Rem
 	
 	' Removes a record from the beginning of an array
 	Method RemoveFirst:JSON()
-		If class = "array"
+		If class = JARRAY
 			Local list:TObjectList = TObjectList(value)
 			If list ; Return JSON(list.RemoveFirst())
 		End If
@@ -870,7 +928,7 @@ End Rem
 
 	' Remove the last record of an ARRAY
 	Method RemoveLast:JSON()
-		If class = "array"
+		If class = JARRAY
 			Local list:TObjectList = TObjectList(value)
 			If list ; Return JSON(list.RemoveLast())
 		End If
@@ -879,17 +937,23 @@ End Rem
 
 	Method _UpgradeToArray:TObjectList()
 		Select class
-		Case "number", "string", "keyword", "object"
+		Case JNUMBER, JSTRING, JKEYWORD, JOBJECT
 			' Copy self into another node
-			Local node:JSON = New JSON( class, value )
+			Local node:JSON = New JSON( class )
+			node.value = value
 			' Create an Array-backed list and insert copy
 			Local list:TObjectList = New TObjectList()
 			list.addlast( node )
 			' Upgrade self to an array
-			class = "array"
+			class = JARRAY
 			value = list
 			Return list
-		Case "array"
+		Case JINVALID
+			Local list:TObjectList = New TObjectList()
+			class = JARRAY
+			value = list
+			Return list
+		Case JARRAY
 			' Do nothing
 			Return TObjectList(value)
 		End Select
@@ -904,11 +968,20 @@ End Rem
 '	End Method
 
 	' Event handler
-	Method SendUpdate:Object( message:String, state:String, alt:String )
-		DebugLog( message + ", " + state + ", "+ alt )
+	'Method SendUpdate:Object( message:String, state:String, alt:String )
+	'	DebugLog( message + ", " + state + ", "+ alt )
+	'	Return Null
+	'End Method
+	
+	Method fail:Object( message:String )
+		errText = message
 		Return Null
 	End Method
 
+	Method GetLastError:String()
+		Return errText
+	End Method
+	
 	' Escape a string
 	Method escape:String( Text:String )
 		Local escaped:String = Text

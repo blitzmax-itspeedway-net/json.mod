@@ -10,4 +10,3 @@ Local J:JSON = JSON.Parse( JText )
 
 Local characters:JSON = J.find("story|Jack and Jill|characters")
 Print( characters.Prettify() )
-

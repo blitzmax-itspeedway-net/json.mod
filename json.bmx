@@ -72,6 +72,12 @@ ModuleInfo "History: V2.3, 12 DEC 22"
 ModuleInfo "History: Moved bmx.lexer and bmx.parser internally as those are due to change"
 ModuleInfo "History: Added Function serialise()"
 
+ModuleInfo "History: V3.0, 02 FEB 23"
+ModuleInfo "History: Updated internal class to INT from STRING"
+ModuleInfo "History: Added .toUint(), .toULong(), .lasterror()"
+ModuleInfo "History: Fixed .count() for object types"
+ModuleInfo "History: Fixed bug in parser"
+
 Import brl.objectlist
 
 Import "lexer/lexer.bmx"

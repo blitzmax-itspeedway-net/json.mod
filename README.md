@@ -2,7 +2,7 @@
 
 BlitzMax JSON by Scaremonger.
 
-**VERSION:** 2.5
+**VERSION:** 3.0
 
 # DEPENDENCIES
 * [BlitzMax-NG](https://blitzmax.org/downloads/)
@@ -53,15 +53,16 @@ BlitzMax JSON by Scaremonger.
 
 Internally all JSON variables are stored as JSON types that represent the following types to store Blitzmax variables:
 
-JSON | BLITZMAX | NOTES
----- | -------- | -----
-array | TObjectList |
-number | String |
-object | TMap |
-string | String |
-keyword | String | "false", "true", "null" 
-
-This makes it quite flexible and allows it to be constructed into one BlitzMax type instead of half a dozen.
+JSON      | INTERNAL    | VALUES | NOTES
+--------- | ----------- | ------ | ------
+JINVALID  | TString     ||
+JARRAY    | TObjectList ||
+JNUMBER   | String      ||
+JOBJECT   | TMap        ||
+JSTRING   | String      ||
+JKEYWORD  | String      | "false", "true", "null" |
+JBOOLEAN  | String      | "false", "true          | Stored as JKEYWORD
+JNULL     | String      | "null"                  | Stored as JKEYWORD
 
 **String to JSON - JSON to String**
 ```
@@ -153,6 +154,69 @@ End If
 # JSON Specification:
 https://www.json.org/json-en.html
 
+# Function index:
+
+FUNCTION  | DESCRIPTION 
+------- | ---------
+.parse:JSON( JText:string ) | Converts JSON Text string into JSON Object
+.serialise:JSON( obj:Obj )  | Convert Blitzmax Object to JSON
+.transpose:Object( typestr:string ) | Convert JSON into given BlitzMax object. 
+.version:string()           | Get the current version
+.versioncheck:int( minver:float, minbuild:int ) | Check for JSON library minimum version 
+
+# Method index:
+
+METHOD  | DESCRIPTION 
+------- | ---------
+.error() | Returns formatted error message
+.getlasterror()		| Returns the last error message
+.getClassID:Int()      | Returns class identifier as an integer 
+.getClassName:String() | Returns class identifier as a string
+.copy:JSON()           | Returns a copy of the object
+.toArray:JSON[]()      | Returns an array of JSON objects
+.toByte:Byte()         | Return JSON value as a Byte
+.toDouble:Double()     | Return JSON value as a Double
+.toFloat:Float()       | Return JSON value as a Float
+.toInt:int()           | Return JSON value as a Int
+.toLong:Long()         | Return JSON value as a Long
+.toShort:Short()       | Return JSON value as a Short
+.toSize_T:Size_T()     | Return JSON value as a Size_T
+.toString:string()     | Return JSON value as a String
+.toUInt:Uint()         | Return JSON value as a UInt
+.toULong:ULong()       | Return JSON value as a ULong
+.isValid:int()         | Checks if the object class is NOT JINVALID
+.isInvalid:Int()       | Checks if the object class is JINVALID
+.isTrue:int()          | Checks if the object class is JKEYWORD and the value is "true"
+.isFalse:int()         | Checks if the object class is JKEYWORD and the value is "false"
+.isNull:int()          | Checks if the object class is JKEYWORD and the value is "null"
+.is:int( criteria:int ) | Checks the object class matches criteria (See class identifiers)
+.stringify:string()                | Converts JSON object into string representation
+.prettifyify:string()              | Converts JSON object into pretty string using 2 spaces
+.prettifyify:string( tabsize:int ) | Converts JSON object into pretty string using given number of spaces
+.prettifyify:string( tab:String )  | Converts JSON object into pretty string using given string
+.find:JSON()           |
+.set()                 |
+.exists:Int()          | Returns True if the JOBJECT contains the given path
+.contains:Int( key:string ) | Returns True if the JOBJECT contains the given key
+.search:JSON()         |
+.size:int()            | Size of a JARRAY or number of keys in a JOBJECT 
+.addFirst( data:JSON ) | Adds a JSON element to top of a JARRAY
+.addLast( data:JSON )  | Adds a JSON element to end of a JARRAY
+.removeFirst:JSON()    | Removes a JSON element from top of a JARRAY
+.removeLast:JSON()     | Removes a JSON element from end of a JARRAY
+
+# Operator Overloads
+OVERLOAD  | DESCRIPTION 
+------- | ---------
+[]:String( key:string )           | Equivalent of .find:String( key:String )
+[]:JSON( key:int )                | Equivalent of .find:JSON( key:int )
+[]=( route:String, value:String ) | Equivalent of .set( route:string, value:string )
+[]=( route:String, value:Int )    | Equivalent of .set( route:string, value:Int )
+[]=( route:String, value:Float )  | Equivalent of .set( route:string, value:Float )
+[]=( route:String, value:JSON )   | Equivalent of .set( route:string, value:JSON )
+
+# Class 
+
 # CHANGE LOG
 
 VERSION | DATE | DETAIL
@@ -176,4 +240,7 @@ V2.2 | 06 DEC 21 | Updated size() to support objects<br> Added search() and is()
 V2.3 | 12 DEC 22 | Added Function serialize()<br>Fixed 'Floating point number as string' issue
 V2.4 | 13 DEC 22 | Added toByte(), toDouble(), toFloat(), toLong(), toShort(), toSize_T(), toUInt() and toULong()<br>Added copy()<br>Updated Transpose()<br>Fixed serialise bug when serialising Type JSON.
 V2.5 | 14 DEC 22 | Added Operator overloading to allow easy creation of JSON
+V3.0 | 02 FEB 23 | Internal classes are now INT instead of STRING
+||Fixed toUInt(), toULong(), .count(). Added getLastError()
+V3.1 | 11 FEB 23 | Fixed issue when parse string is a JSON array
 

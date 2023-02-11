@@ -7,13 +7,7 @@ SuperStrict
 
 ',"kind":0,"name":"SKIPPED 'Original message "' [4,21]","range":{"end":{"character":39,"line":3},"start":{"character":21,"line":3}},"selectionRange":{"end":{"character":39,"line":3},"start":{"character":21,"line":3}}},
 
-'Import bmx.json
-Import bmx.lexer
-Import bmx.parser
 Import bmx.json
-'Include "../src/JSON.bmx"
-'Include "../src/TJSONLexer.bmx"
-'Include "../src/TJSONParser.bmx"
 
 Print "JSON VERSION: "+JSON.Version()
 
@@ -23,12 +17,12 @@ Local WhatFredSaid:String = "Fred said ~qHello~q."
 
 'DebugStop
 Print "~n--TEST1--------"
-J = New JSON( JSON_STRING, WhatFredSaid )
+J = New JSON( JSTRING, WhatFredSaid )
 Print "PRETTY: "+J.prettify()
 Print "STRING: "+J.toString()
 
 Print "~n--TEST2--------"
-J = New JSON( "string", WhatFredSaid )
+J = New JSON( JSTRING, WhatFredSaid )
 Print "PRETTY: "+J.prettify()
 Print "STRING: "+J.toString()
 

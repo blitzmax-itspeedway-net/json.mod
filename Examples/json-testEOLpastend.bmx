@@ -7,21 +7,15 @@ SuperStrict
 
 ' This tests a "pretty" JSON file with trailing EOL after "}"
 
-Import bmx.lexer
-Import bmx.parser
-Import brl.objectlist
-
-Include "../json.mod/src/JSON.bmx"
-Include "../json.mod/src/TJSONLexer.bmx"
-Include "../json.mod/src/TJSONParser.bmx"
+Import bmx.json
 
 Local J:JSON
-Local text:String
-text = "{~n~r~qlogfile~q:~q/home/scaremonger/dev/logfilelog~q,~n~qloglevel~q:~q7~q,~n~qthreadpool~q:4~n}~n"
+Local Text:String
+Text = "{~n~r~qlogfile~q:~q/home/scaremonger/dev/logfilelog~q,~n~qloglevel~q:~q7~q,~n~qthreadpool~q:4~n}~n"
 
-Print "IN:~n  " + text
+Print "IN:~n  " + Text
 'DebugStop
-J = JSON.Parse( text )
+J = JSON.Parse( Text )
 Print "OUT:~n  " + J.Stringify()
 
 If j.isInvalid()
