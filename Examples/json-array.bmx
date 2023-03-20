@@ -6,15 +6,27 @@ SuperStrict
 Import bmx.json
 
 ' Create JSON from string
-Local JText:String = "{'test':true,'example':['one','two','three'],'items':[{'section':'test'},{'section':'bls'},{'section':'lsp'},{'section':'blitzmax'}]}"
-JText = JText.Replace( "'", Chr(34) )
+Local JText:String = """
+	{
+	"test":0,
+	"example":["one","two","three"],
+	"items":[
+		{"section":"test"},
+		{"section":"bls"},
+		{"section":"lsp"},
+		{"section":"blitzmax"}
+		]
+	}
+"""
 Local J:JSON = JSON.Parse( JText )
+
+Print J.prettify()
 
 Local response:JSON = New JSON()
 response.set( "jsonrpc", "2.0")
 response.set( "params", J )
 
-'response.set( "example", [] )
+Print response.prettify()
 
 Print "~nLOOP THROUGH ARRAY ITEMS:"
 'DebugStop
@@ -49,7 +61,7 @@ Print "~nADD ARRAY ITEMS:"
 Local array:JSON = J.find( "test" )
 
 Print "  BEFORE INSERT:"
-Print "    CLASS: "+array.getClassName
+Print "    CLASS: "+array.getClassName()
 Print "    VALUE: "+array.stringify()
 
 'DebugStop
@@ -57,17 +69,22 @@ array.addLast( New JSON( JBOOLEAN, False ) )
 array.addFirst( New JSON( JSTRING, "XYZ" ) )
 
 Print "  AFTER INSERT:"
-Print "    CLASS: "+array.getClassName
+Print "    CLASS: "+array.getClassName()
 Print "    SIZE:  "+array.size()
 
+Print "~nLOOP BY INDEX:"
 For Local a:Int = 0 Until array.size()
 	Local JA:JSON = array[a]
 	Print "    items["+a+"] == "+JA.stringify()
 Next
 
+Print "~nLOOP BY ITERATOR:"
+For Local JA:JSON = EachIn array
+	Print "    "+JA.stringify()
+Next
+
 array.removeFirst()
 
 Print "~nPRETTY:"
-
-Print response.prettify()
+Print array.prettify()
 

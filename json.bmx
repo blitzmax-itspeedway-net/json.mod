@@ -78,6 +78,9 @@ ModuleInfo "History: Added .toUint(), .toULong(), .lasterror()"
 ModuleInfo "History: Fixed .count() for object types"
 ModuleInfo "History: Fixed bug in parser"
 
+ModuleInfo "History: V3.1, 19 MAR 23"
+ModuleInfo "History: Added enumeration for JARRAY and JOBJECT"
+
 Import brl.objectlist
 
 Import "lexer/lexer.bmx"

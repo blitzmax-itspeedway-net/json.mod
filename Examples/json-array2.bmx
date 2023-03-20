@@ -9,8 +9,9 @@ Global TRUEFALSE:String[] = ["FALSE","TRUE"]
 Global YESNO:String[] = ["NO","YES"]
 
 ' Create JSON from string
-Local JText:String = "['test1','test2','test3',{'Another':'time'},'test4']"
-JText = JText.Replace( "'", Chr(34) )
+Local JText:String = """
+	["test1","test2","test3",{"Another":"time"},"test4"]
+"""
 Local J:JSON = JSON.Parse( JText )
 Print J.Prettify()
 

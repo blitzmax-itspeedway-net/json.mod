@@ -1,3 +1,14 @@
+SuperStrict
+
+Import brl.objectlist
+
+Import "lexer/lexer.bmx"
+Import "parser/parser.bmx"
+
+
+'Include "src/JSON.bmx"
+Include "src/TJSONLexer.bmx"
+Include "src/TJSONParser.bmx"
 
 '	JSON MODULE FOR BLITZMAX
 '	(c) Copyright Si Dunford, July 2021, All Rights Reserved
@@ -1026,13 +1037,13 @@ End Rem
     End Function
 
 	Function version:String()
-		Return JSON_VERSION+"."+JSON_BUILD
+'		Return JSON_VERSION+"."+JSON_BUILD
 	End Function
 	
 	Function versioncheck:Int( minver:Float, minbuild:Int )
-		If Float( JSON_VERSION ) < minver Return False
-		If Float( JSON_VERSION ) > minver Return True
-		If Int( JSON_BUILD ) >= minbuild Return True
+'		If Float( JSON_VERSION ) < minver Return False
+'		If Float( JSON_VERSION ) > minver Return True
+'		If Int( JSON_BUILD ) >= minbuild Return True
 		Return False
 	End Function
 	
@@ -1044,7 +1055,16 @@ End Rem
 			Return Null
 		End Select
 	End Method
-		
+
+	'Method values:TMapEnumerator()
+	'	Select class
+	'	Case JARRAY
+	'		Return TMap(value).keys()
+	'	Default
+	'		Return Null
+	'	End Select
+	'End Method
+			
 	Method ObjectEnumerator:TNodeEnumerator()
 		Select class
 		Case JARRAY
@@ -1090,3 +1110,30 @@ Type TJSONArrayEnumerator Extends TNodeEnumerator
 
 End Type
 
+Local JText:String = """
+	{
+	"test":True,
+	"example":["one","two","three"],
+	"items":[
+		{"section":"test"},
+		{"section":"bls"},
+		{"section":"lsp"},
+		{"section":"blitzmax"}
+		]
+	}
+"""
+Local J:JSON = JSON.Parse( JText )
+
+Local array:JSON = J.find( "test" )
+
+Print "  BEFORE INSERT:"
+Print "    CLASS: "+array.getClassName()
+Print "    VALUE: "+array.stringify()
+
+'DebugStop
+array.addLast( New JSON( JBOOLEAN, False ) )
+array.addFirst( New JSON( JSTRING, "XYZ" ) )
+
+Print "  AFTER INSERT:"
+Print "    CLASS: "+array.getClassName()
+Print "    SIZE:  "+array.size()

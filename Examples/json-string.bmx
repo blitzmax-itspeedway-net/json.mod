@@ -56,7 +56,7 @@ Local document:String = "\n'   INCLUDE APPLICATION COMPONENTS\r\n\r\n'DebugStop\
 Validate( "{~qname~q:~q"+document+"~q}" )
 
 
-document = "{~n-r~qlogfile~q:~q/home/scaremonger/dev/logfilelog~q,~n~qloglevel~q:~q7~q,~n~qthreadpool~q:4~n}~n"
+document = "{~n~r~qlogfile~q:~q/home/scaremonger/dev/logfilelog~q,~n~qloglevel~q:~q7~q,~n~qthreadpool~q:4~n}~n"
 Validate( document )
 
 
