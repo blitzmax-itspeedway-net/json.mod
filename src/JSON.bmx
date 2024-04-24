@@ -262,7 +262,7 @@ Type JSON
 		Return 0
 	End Method
 		
-    Method toString:String()
+    Method ToString:String()
 		Return String(value)
 	End Method
 
@@ -315,7 +315,7 @@ Type JSON
 	End Method	
 
 	' Get value of a JSON object's child using string index
-	Method operator []:String( key:String )
+	Method Operator []:String( key:String )
         If class = JOBJECT
 			Local map:TMap = TMap( value )
 			If map
@@ -329,7 +329,7 @@ Type JSON
 	End Method
 
 	' Get value in a JSON array using integer index
-	Method operator []:JSON( key:Int )
+	Method Operator []:JSON( key:Int )
 		If class <> JARRAY Return Null
 		Local items:TObjectList = TObjectList( value )
 		If key>items.count() Or key<0 Return Null
@@ -342,16 +342,16 @@ Type JSON
 	End Method
 	
 	' Set Values
-	Method operator []=( route:String, value:String )
+	Method Operator []=( route:String, value:String )
 		set( route, value )
 	End Method
-	Method operator []=( route:String, value:Int )
+	Method Operator []=( route:String, value:Int )
 		set( route, value )
 	End Method
-	Method operator []=( route:String, value:Float )
+	Method Operator []=( route:String, value:Float )
 		set( route, value )
 	End Method
-	Method operator []=( route:String, value:JSON )
+	Method Operator []=( route:String, value:JSON )
 		set( route, value )
 	End Method
 	' 14/12/22, Operator overload doesn;t seem to allow "Object" types as params
@@ -417,7 +417,7 @@ Type JSON
 			Next		
 			Local tokens:String[] = txt.split( "~n" )
 			Local indent:String
-			For Local i:Int = 0 Until tokens.length
+			For Local i:Int = 0 Until tokens.Length
 				Local token:String = tokens[i]
 				If token.startswith("}") Or token.startswith("]") ; indent = indent[..(Len(indent)-Len(tab))]
 				tokens[i] = indent+token
@@ -425,7 +425,7 @@ Type JSON
 			Next
 			txt = "~n".join( tokens )
 		Catch e:TRegExException
-			DebugLog "Error : " + e.toString()
+			DebugLog "Error : " + e.ToString()
 		End Try
 		Return txt
 	End Method
@@ -442,22 +442,22 @@ Type JSON
 
 	Function _Array2JSON:JSON( array:Object, fieldtype:TTypeId )
 		Local J:JSON = New JSON( JARRAY )
-		Local length:Int, dimensions:Int
+		Local Length:Int, dimensions:Int
 		Try
-			length = fieldtype.arrayLength( array )
+			Length = fieldtype.arrayLength( array )
 		Catch e:String
-			length = 0
+			Length = 0
 		End Try
 		Try
 			dimensions = fieldtype.arrayDimensions( array )
 		Catch e:String
 			dimensions = 0
 		End Try
-		If length = 0 Or dimensions = 0; Return J
+		If Length = 0 Or dimensions = 0; Return J
 		
 		Local elementTypeid:TTypeId = fieldtype.ElementType()
 		'DebugStop
-		For Local e:Int = 0 Until length
+		For Local e:Int = 0 Until Length
 			'Local element:JSON
 			Local fieldname:String = elementTypeID.Name()
 			'DebugStop
@@ -553,7 +553,7 @@ Type JSON
 	Public
 	
     ' Transpose a JSON object into a Blitzmax Object using Reflection 
-    Method transpose:Object( typestr:String )
+    Method Transpose:Object( typestr:String )
         'fail( "Transpose('"+typestr+"')" )
 		If class=JOBJECT; Return _JSON2Object( typestr )
 		Return fail( "Unable to transpose "+class )
@@ -631,7 +631,7 @@ Type JSON
 			Case LongTypeId;	fld.setLong( obj, J.toLong() )
 			Case ShortTypeId;	fld.setShort( obj, J.toShort() )
 			Case SizeTTypeId;	fld.setSizeT( obj, J.toSize_T() )
-			Case StringTypeId;	fld.SetString( obj, J.tostring() )
+			Case StringTypeId;	fld.SetString( obj, J.ToString() )
 			Case UIntTypeId;	fld.setUInt( obj, J.toUInt() )
 			Case ULongTypeId;	fld.setULong( obj, J.toULong() )
 			Default
@@ -771,7 +771,7 @@ End Rem
 		Local J:JSON = find( route, True )	' Find route and create if missing
 		For Local value:String[] = EachIn values
 			'_set( route+"|"+value[0], value[1], "string" )
-			If value.length=2
+			If value.Length=2
 				Local node:JSON = J.find( value[0], True )
 				node.set( value[1] )
 			End If
@@ -797,7 +797,7 @@ End Rem
 	
 	Method find:JSON( path:String[], createme:Int = False )
 	'DebugStop
-		If path.length=0		' Found!
+		If path.Length=0		' Found!
 			Return Self
 		Else
 			' If child is specified then I MUST be an object right?
@@ -851,7 +851,7 @@ End Rem
 	' Search is like FIND but returns NUL if not found
 	Method search:JSON( path:String[] )
 	'DebugStop
-		If path.length=0		' Found!
+		If path.Length=0		' Found!
 			Return Self
 		Else
 			' If child is specified then I MUST be an object right?
@@ -867,7 +867,7 @@ End Rem
 			' Does child exist?
 			child = JSON( map.valueforkey( path[0] ) )
 			If Not child Return Null ' Not found
-			Return child.find( path[1..] )
+			Return child.search( path[1..] )
 		End If
 	End Method
 

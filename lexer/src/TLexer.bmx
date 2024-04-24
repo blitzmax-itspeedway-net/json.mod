@@ -394,7 +394,7 @@ End Rem
     Method PeekChar:String( IgnoredSymbols:String )
 '    Method PeekChar:String( IgnoredSymbols:String = SYM_WHITESPACE )
 'DebugStop
-		If cursor>=source.length Return ""
+		If cursor>=source.Length Return ""
 		Local pointer:Int = cursor
 		Local char:String = source[pointer..pointer+1]
 
@@ -432,7 +432,7 @@ End Rem
     End Method
 
     Method PeekChar:String()
-		If cursor>=source.length Return ""
+		If cursor>=source.Length Return ""
 		Return source[cursor..cursor+1]
 	End Method
 	
@@ -441,7 +441,7 @@ End Rem
     'Method PopChar:String( IgnoredSymbols:String = SYM_WHITESPACE )
 'DebugStop
         'Local char:String
-		If cursor>=source.length Return ""
+		If cursor>=source.Length Return ""
         Local char:String = source[cursor..cursor+1]
 		'
 		' Ignore leading whitespace
@@ -451,7 +451,7 @@ End Rem
 		'If ignoreWhitespace IgnoredSymbols = whitespace
 		
         'Repeat
-            If source.length = 0 Return ""
+            If source.Length = 0 Return ""
             char = source[cursor..cursor+1]
             Select char
             Case "~r"   ' CR
@@ -493,7 +493,7 @@ End Rem
 
 	' Pops next character moving the cursor forward
     Method PopChar:String()
-		If cursor>=source.length Return ""
+		If cursor>=source.Length Return ""
         Local char:String = source[cursor..cursor+1]
 
 		'
@@ -580,7 +580,7 @@ End Rem
 		char = popChar()   ' This is the leading Quote (Skip that)
 		char = popChar()	' This is the first character (The one we want)
         While char<>"~q" And char<>""
-			Select char.length
+			Select char.Length
 			Case 1
 				Text :+ char
 			Case 2	' ESCAPE CHARACTER?
@@ -638,7 +638,7 @@ End Rem
 		re = TRegEx.Create( Text )
 'DebugStop
 		Try
-			Local matches:TRegExMatch = re.find( source, cursor )
+			Local matches:TRegExMatch = re.find( source, Size_T(cursor) )
 			If matches Return matches
 		Catch e:TRegExException
 			' Do nothing, its not important!
@@ -650,7 +650,7 @@ End Rem
 		Local re:TRegEx = TRegEx.Create( "(?i)"+Text+"|"+alt )
 'DebugStop
 		Try
-			Local matches:TRegExMatch = re.find( source, cursor )
+			Local matches:TRegExMatch = re.find( source, Size_T(cursor) )
 			If matches Return matches
 			'Return [match.substart(0),match.subEnd(0)+1]
 		Catch e:TRegExException
@@ -661,7 +661,7 @@ End Rem
 		
 	Method getChunk:String( pos:Int )
 		Local start:Int=cursor
-		pos = Min( pos, source.length )	' Bounds check 
+		pos = Min( pos, source.Length )	' Bounds check 
 		cursor = pos
 		Return adjust(source[start..pos])
 	End Method
@@ -669,14 +669,14 @@ End Rem
 	' Skips a fixed amount of characters
 	Method skip( count:Int )
 		Local start:Int=cursor
-		Local pos:Int = Min( cursor+count, source.length)
+		Local pos:Int = Min( cursor+count, source.Length)
 		adjust(source[cursor..pos])
 		cursor = pos
 	End Method
 	
 	' Adjusts the cursor and line position based on a string
 	Method adjust:String( content:String )
-		For Local i:Int = 0 Until content.length
+		For Local i:Int = 0 Until content.Length
 			If content[i..i+1]="~n"
                 linenum :+1
                 linepos = 1

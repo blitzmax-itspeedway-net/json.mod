@@ -88,8 +88,8 @@ Import "parser/parser.bmx"
 
 '   INCREMENT JSON_VERSION
 ?Debug
-' @bmk include src/version.bmk
-' @bmk incrementVersion src/version.bmx
+'IGNORE ' @bmk include src/version.bmk
+'IGNORE ' @bmk incrementVersion src/version.bmx
 ?
 Include "src/version.bmx"
 

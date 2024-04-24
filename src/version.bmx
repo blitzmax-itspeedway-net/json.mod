@@ -1,2 +1,2 @@
-Const JSON_VERSION:String="3.1"
-Const JSON_BUILD:String="58"
+Const JSON_VERSION:String="3.2"
+Const JSON_BUILD:String="61"
