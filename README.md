@@ -2,7 +2,7 @@
 
 BlitzMax JSON by Scaremonger.
 
-**VERSION:** 3.0
+**VERSION:** 3.2
 
 # DEPENDENCIES
 * [BlitzMax-NG](https://blitzmax.org/downloads/)
@@ -194,16 +194,17 @@ METHOD  | DESCRIPTION
 .prettifyify:string()              | Converts JSON object into pretty string using 2 spaces
 .prettifyify:string( tabsize:int ) | Converts JSON object into pretty string using given number of spaces
 .prettifyify:string( tab:String )  | Converts JSON object into pretty string using given string
-.find:JSON()           |
-.set()                 |
+.find:JSON()           | Searches for a node, returns empty object if not found - See .search()
+.set()                 | Sets a specific node to a value
 .exists:Int()          | Returns True if the JOBJECT contains the given path
 .contains:Int( key:string ) | Returns True if the JOBJECT contains the given key
-.search:JSON()         |
+.search:JSON()         | Searches for a node, returns null if not found - See .find()
 .size:int()            | Size of a JARRAY or number of keys in a JOBJECT 
 .addFirst( data:JSON ) | Adds a JSON element to top of a JARRAY
 .addLast( data:JSON )  | Adds a JSON element to end of a JARRAY
 .removeFirst:JSON()    | Removes a JSON element from top of a JARRAY
 .removeLast:JSON()     | Removes a JSON element from end of a JARRAY
+.unset( route:string ) | Removes a JSON element from a JOBJECT
 
 # Operator Overloads
 OVERLOAD  | DESCRIPTION 
@@ -243,4 +244,7 @@ V2.5 | 14 DEC 22 | Added Operator overloading to allow easy creation of JSON
 V3.0 | 02 FEB 23 | Internal classes are now INT instead of STRING
 ||Fixed toUInt(), toULong(), .count(). Added getLastError()
 V3.1 | 11 FEB 23 | Fixed issue when parse string is a JSON array
+V3.2 | 18 MAY 24 | Added unset() to remove object from JOBJECT
+
+
 

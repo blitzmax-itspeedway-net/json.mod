@@ -2,7 +2,7 @@ SuperStrict
 
 '	JSON MODULE FOR BLITZMAX
 '	(c) Copyright Si Dunford, July 2021, All Rights Reserved
-'	V2.3
+'	V3.2
 
 Rem
 bbdoc: bmx.json
@@ -12,7 +12,7 @@ Module bmx.json
 
 ModuleInfo "Copyright: Si Dunford, July 2021, All Rights Reserved"
 ModuleInfo "Author:    Si Dunford"
-ModuleInfo "Version:   2.3"
+ModuleInfo "Version:   3.2"
 ModuleInfo "License:   MIT"
 
 ModuleInfo "History: V1.0, 20 JUL 21"
@@ -80,6 +80,9 @@ ModuleInfo "History: Fixed bug in parser"
 
 ModuleInfo "History: V3.1, 19 MAR 23"
 ModuleInfo "History: Added enumeration for JARRAY and JOBJECT"
+
+ModuleInfo "History: V3.2, 18 MAY 24"
+ModuleInfo "History: Added unset()"
 
 Import brl.objectlist
 

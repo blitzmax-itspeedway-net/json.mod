@@ -1,7 +1,7 @@
 
 '	JSON MODULE FOR BLITZMAX
 '	(c) Copyright Si Dunford, July 2021, All Rights Reserved
-'	V3.0
+'	V3.2
 
 ' Version 3.0 constants
 Const JINVALID:Int 	= 0
@@ -786,6 +786,39 @@ End Rem
 		J.value = node.value
     End Method
 	
+	' Delete an entry
+	Method unset( route:String )
+		' Ignore empty route
+		route = Trim(route)
+        If route=""; Return
+		Local splitroute:String[] = route.split("|")
+		Local Length:Int = Len( splitroute )
+		'
+		'Local J:JSON
+		If Length = 0; Return
+		Local parent:JSON, child:String
+		
+		If Length = 1
+			' If there is only one level, we are removing from the root
+			parent = Self
+			child = route
+		ElseIf Length > 1
+			' More levels, we need to find the parent
+			parent = find( splitroute[..(Length-1)], False )	' Find route - DO NOT CREATE
+			child = splitroute[Length-1]
+		End If
+		
+		If Not parent Or parent.isinvalid() Or Not child; Return
+
+		' If child is specified then I MUST be an object right?		
+		If parent.class = JOBJECT
+			' Yay, I am an object.
+			Local items:TMap = TMap( parent.value )
+			items.remove( child )
+		End If
+
+	End Method
+	
 	' V0.1
 	Method find:JSON( route:String, createme:Int = False )
         ' Ignore empty route
@@ -1029,7 +1062,7 @@ End Rem
 		Return JSON_VERSION+"."+JSON_BUILD
 	End Function
 	
-	Function versioncheck:Int( minver:Float, minbuild:Int )
+	Function versioncheck:Int( minver:Float, minbuild:Int=0 )
 		If Float( JSON_VERSION ) < minver Return False
 		If Float( JSON_VERSION ) > minver Return True
 		If Int( JSON_BUILD ) >= minbuild Return True
